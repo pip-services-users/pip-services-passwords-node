@@ -29,7 +29,7 @@ seneca.act(
 );
 ```
 
-* [UserPassword class](#class1)
+* [UserPasswordV1 class](#class1)
 * [cmd: 'set_password'](#operation1)
 * [cmd: 'delete_password'](#operation2)
 * [cmd: 'authenticate'](#operation3)
@@ -39,7 +39,7 @@ seneca.act(
 
 ## Data types
 
-### <a name="class1"></a> UserPassword class
+### <a name="class1"></a> UserPasswordV1 class
 
 Represents a user password with his ID, name, password and key settings.
 It also tracks authentication attempts and recovery codes. 
@@ -47,12 +47,12 @@ It also tracks authentication attempts and recovery codes.
 **Properties:**
 - id: string - unique user id
 - password: string - SHA256 hash for user password (password isn't stored for security)
-- lock: boolean - true if user account was temporary locked after few failed authentication attempts
-- lock_until: Date - date and time when lock expires
-- pwd_fail_count: int - number of sequential failed attempts
-- pwd_last_fail: Date - date and time of the last failed attempt
-- pwd_rec_code: string - password recovery code that was sent to user in email message
-- pwd_rec_expire: Date - date and time when password recovery code expires
+- locked: boolean - true if user account was temporary locked after few failed authentication attempts
+- lock_time: Date - date and time when lock expires
+- fail_count: int - number of sequential failed attempts
+- fail_time: Date - date and time of the last failed attempt
+- rec_code: string - password recovery code that was sent to user in email message
+- rec\_expire\_time: Date - date and time when password recovery code expires
 - custom_hdr: Object - custom data summary that is always returned (in list and details)
 - custom_dat: Object - custom data details that is returned only when a single object is returned (details)
 
@@ -68,7 +68,6 @@ Sets a password for new user in the system
 
 **Returns:**
 - err: Error - occured error or null for success
-- result: UserPassword - created UserPassword object
 
 ### <a name="operation2"></a> Cmd: 'delete_password'
 
@@ -90,7 +89,8 @@ Authenticates user using ID/password combination and returns user object.
 
 **Returns:**
 - err: Error - occured error or null for success
-- result: UserPassword - UserPassword account when authentication was successful
+- result: Object - Object with authentication result
+    - authenticated: boolean - True if authenticated successfully
 
 ### <a name="operation4"></a> Cmd: 'change_password'
 
@@ -103,7 +103,6 @@ Changes user password by providing old password
 
 **Returns:**
 - err: Error - occured error or null for success
-- result: UserPassword - updated UserPassword object
 
 ### <a name="operation5"></a> Cmd: 'reset_password'
 
@@ -116,7 +115,6 @@ Resets user password by providing recovery code
 
 **Returns:**
 - err: Error - occured error or null for success
-- result: UserPassword - updated UserPassword object
 
 ### <a name="operation6"></a> Cmd: 'recover_password'
 
@@ -127,4 +125,3 @@ Generates password recovery code for the user and sends it via email
 
 **Returns:**
 - err: Error - occured error or null for success
-- result: string - password recovery code

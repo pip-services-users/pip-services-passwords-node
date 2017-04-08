@@ -1,28 +1,30 @@
-import { ComponentFactory } from 'pip-services-runtime-node';
-import { DefaultFactory } from 'pip-services-runtime-node';
-
-import { ActivitiesFactory } from 'pip-clients-activities-node';
-import { EmailFactory } from 'pip-clients-email-node';
+import { Factory } from 'pip-services-commons-node';
+import { Descriptor } from 'pip-services-commons-node';
 
 import { PasswordsMongoDbPersistence } from '../persistence/PasswordsMongoDbPersistence';
 import { PasswordsFilePersistence } from '../persistence/PasswordsFilePersistence';
 import { PasswordsMemoryPersistence } from '../persistence/PasswordsMemoryPersistence';
 import { PasswordsController } from '../logic/PasswordsController';
-import { PasswordsRestService } from '../services/version1/PasswordsRestService';
-import { PasswordsSenecaService } from '../services/version1/PasswordsSenecaService'; 
+import { PasswordsHttpServiceV1 } from '../services/version1/PasswordsHttpServiceV1';
+import { PasswordsSenecaServiceV1 } from '../services/version1/PasswordsSenecaServiceV1'; 
 
-export class PasswordsFactory extends ComponentFactory {
-	public static Instance: PasswordsFactory = new PasswordsFactory();
+export class PasswordsFactory extends Factory {
+	public static Descriptor = new Descriptor("pip-services-passwords", "factory", "default", "default", "1.0");
+	public static MemoryPersistenceDescriptor = new Descriptor("pip-services-passwords", "persistence", "memory", "*", "1.0");
+	public static FilePersistenceDescriptor = new Descriptor("pip-services-passwords", "persistence", "file", "*", "1.0");
+	public static MongoDbPersistenceDescriptor = new Descriptor("pip-services-passwords", "persistence", "mongodb", "*", "1.0");
+	public static ControllerDescriptor = new Descriptor("pip-services-passwords", "controller", "default", "*", "1.0");
+	public static SenecaServiceDescriptor = new Descriptor("pip-services-passwords", "service", "seneca", "*", "1.0");
+	public static HttpServiceDescriptor = new Descriptor("pip-services-passwords", "service", "http", "*", "1.0");
 	
 	constructor() {
-		super(DefaultFactory.Instance, ActivitiesFactory.Instance, EmailFactory.Instance);
-
-		this.register(PasswordsFilePersistence.Descriptor, PasswordsFilePersistence);
-		this.register(PasswordsMemoryPersistence.Descriptor, PasswordsMemoryPersistence);
-		this.register(PasswordsMongoDbPersistence.Descriptor, PasswordsMongoDbPersistence);
-		this.register(PasswordsController.Descriptor, PasswordsController);
-		this.register(PasswordsRestService.Descriptor, PasswordsRestService);
-		this.register(PasswordsSenecaService.Descriptor, PasswordsSenecaService);
+		super();
+		this.registerAsType(PasswordsFactory.MemoryPersistenceDescriptor, PasswordsMemoryPersistence);
+		this.registerAsType(PasswordsFactory.FilePersistenceDescriptor, PasswordsFilePersistence);
+		this.registerAsType(PasswordsFactory.MongoDbPersistenceDescriptor, PasswordsMongoDbPersistence);
+		this.registerAsType(PasswordsFactory.ControllerDescriptor, PasswordsController);
+		this.registerAsType(PasswordsFactory.SenecaServiceDescriptor, PasswordsSenecaServiceV1);
+		this.registerAsType(PasswordsFactory.HttpServiceDescriptor, PasswordsHttpServiceV1);
 	}
 	
 }

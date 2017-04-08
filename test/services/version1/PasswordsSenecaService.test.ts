@@ -2,70 +2,74 @@ let _ = require('lodash');
 let async = require('async');
 let assert = require('chai').assert;
 
-import { ComponentSet } from 'pip-services-runtime-node';
-import { ComponentConfig } from 'pip-services-runtime-node';
-import { SenecaAddon } from 'pip-services-runtime-node';
-import { DynamicMap } from 'pip-services-runtime-node';
-import { LifeCycleManager } from 'pip-services-runtime-node';
+import { Descriptor } from 'pip-services-commons-node';
+import { ConfigParams } from 'pip-services-commons-node';
+import { References } from 'pip-services-commons-node';
+import { ConsoleLogger } from 'pip-services-commons-node';
+import { SenecaInstance } from 'pip-services-net-node';
 
+import { UserPasswordV1 } from '../../../src/data/version1/UserPasswordV1';
 import { PasswordsMemoryPersistence } from '../../../src/persistence/PasswordsMemoryPersistence';
 import { PasswordsController } from '../../../src/logic/PasswordsController';
-import { PasswordsSenecaService } from '../../../src/services/version1/PasswordsSenecaService';
+import { PasswordsSenecaServiceV1 } from '../../../src/services/version1/PasswordsSenecaServiceV1';
 
-let USER_PWD = {
-    id: '1',
-    name: 'Test User 1',
-    email: 'user1@digitallivingsoftware.com',
-    password: 'password123'
-};
+let USER_PWD = new UserPasswordV1('1', 'password123');
 
-suite('PasswordsSenecaService', ()=> {        
-    let db = new PasswordsMemoryPersistence();
-    db.configure(new ComponentConfig());
-
-    let ctrl = new PasswordsController();
-    ctrl.configure(new ComponentConfig());
-
-    let service = new PasswordsSenecaService();
-    service.configure(new ComponentConfig());
-
-    let seneca = new SenecaAddon();
-    seneca.configure(new ComponentConfig());
-
-    let components = ComponentSet.fromComponents(db, ctrl, service, seneca);
+suite('PasswordsSenecaServiceV1', ()=> {
+    let seneca: any;
+    let service: PasswordsSenecaServiceV1;
+    let persistence: PasswordsMemoryPersistence;
+    let controller: PasswordsController;
 
     suiteSetup((done) => {
-        LifeCycleManager.linkAndOpen(components, done);
+        persistence = new PasswordsMemoryPersistence();
+        controller = new PasswordsController();
+
+        service = new PasswordsSenecaServiceV1();
+        service.configure(ConfigParams.fromTuples(
+            "connection.protocol", "none"
+        ));
+
+        let logger = new ConsoleLogger();
+        let senecaAddon = new SenecaInstance();
+
+        let references: References = References.fromTuples(
+            new Descriptor('pip-services-commons', 'logger', 'console', 'default', '1.0'), logger,
+            new Descriptor('pip-services-net', 'seneca', 'instance', 'default', '1.0'), senecaAddon,
+            new Descriptor('pip-services-passwords', 'persistence', 'memory', 'default', '1.0'), persistence,
+            new Descriptor('pip-services-passwords', 'controller', 'default', 'default', '1.0'), controller,
+            new Descriptor('pip-services-passwords', 'service', 'seneca', 'default', '1.0'), service
+        );
+
+        controller.setReferences(references);
+        service.setReferences(references);
+
+        seneca = senecaAddon.getInstance();
+
+        service.open(null, done);
     });
     
     suiteTeardown((done) => {
-        seneca.getSeneca().close(() => {
-            LifeCycleManager.close(components, done);
-        });
+        service.close(null, done);
     });
     
     setup((done) => {
-        db.clearTestData(done);
+        persistence.clear(null, done);
     });
     
     test('Basic Operations', (done) => {
         async.series([
         // Create password
             (callback) => {
-                seneca.getSeneca().act(
+                seneca.act(
                     {
                         role: 'passwords',
                         cmd: 'set_password',
                         user_id: USER_PWD.id,
                         password: USER_PWD.password
                     },
-                    (err, userPassword) => {
+                    (err) => {
                         assert.isNull(err);
-                        
-                        assert.isObject(userPassword);
-                        assert.equal(userPassword.id, USER_PWD.id);
-                        assert.isNotNull(userPassword.password);
-                        assert.isFalse(userPassword.lock);
 
                         callback();
                     }
@@ -73,18 +77,18 @@ suite('PasswordsSenecaService', ()=> {
             },
         // Authenticate user
             (callback) => {
-                seneca.getSeneca().act(
+                seneca.act(
                     {
                         role: 'passwords',
                         cmd: 'authenticate',
                         user_id: USER_PWD.id,
                         password: USER_PWD.password
                     },
-                    (err, userPassword) => {
+                    (err, result) => {
                         assert.isNull(err);
                         
-                        assert.isObject(userPassword);
-                        assert.equal(userPassword.id, USER_PWD.id);
+                        assert.isObject(result);
+                        assert.isTrue(result.authenticated);
 
                         callback();
                     }
@@ -92,7 +96,7 @@ suite('PasswordsSenecaService', ()=> {
             },
         // Change password
             (callback) => {
-                seneca.getSeneca().act(
+                seneca.act(
                     {
                         role: 'passwords',
                         cmd: 'change_password',
@@ -100,19 +104,16 @@ suite('PasswordsSenecaService', ()=> {
                         old_password: USER_PWD.password,
                         new_password: 'newpwd123'
                     },
-                    (err, userPassword) => {
+                    (err) => {
                         assert.isNull(err);
                         
-                        assert.isObject(userPassword);
-                        assert.equal(userPassword.id, USER_PWD.id)
-
                         callback();
                     }
                 );
             },
         // Delete password
             (callback) => {
-                seneca.getSeneca().act(
+                seneca.act(
                     {
                         role: 'passwords',
                         cmd: 'delete_password',
@@ -127,14 +128,14 @@ suite('PasswordsSenecaService', ()=> {
             },
         // Try to authenticate
             (callback) => {
-                seneca.getSeneca().act(
+                seneca.act(
                     {
                         role: 'passwords',
                         cmd: 'authenticate',
                         user_id: USER_PWD.id,
                         password: 'newpwd123'
                     },
-                    (err, userPassword) => {
+                    (err, result) => {
                         assert.isNotNull(err);
 
                         callback();

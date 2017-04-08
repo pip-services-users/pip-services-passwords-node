@@ -11,8 +11,8 @@ The microservice currently supports the following deployment options:
 * Persistence: Flat Files, MongoDB
 
 This microservice has optional dependencies on the following microservices:
-- [pip-services-activities](https://github.com/pip-services/pip-services-activities) - to log user activities
-- [pip-services-email](https://github.com/pip-services/pip-services-email) - to send email notifications to users
+- [pip-services-activities](https://github.com/pip-services-users/pip-services-activities-node) - to log user activities
+- [pip-services-email](https://github.com/pip-services-users/pip-services-email-node) - to send email notifications to users
 
 <a name="links"></a> Quick Links:
 
@@ -21,16 +21,16 @@ This microservice has optional dependencies on the following microservices:
 * [Configuration Guide](doc/Configuration.md)
 * [Deployment Guide](doc/Deployment.md)
 * Client SDKs
-  - [Node.js SDK](https://github.com/pip-services/pip-clients-passwords-node)
+  - [Node.js SDK](https://github.com/pip-services-users/pip-clients-passwords-node)
 * Communication Protocols
-  - [HTTP/REST Version 1](doc/RestProtocolV1.md)
+  - [HTTP Version 1](doc/HttpProtocolV1.md)
   - [Seneca Version 1](doc/SenecaProtocolV1.md)
 
 ## Download
 
 Right now the only way to get the microservice is to check it out directly from github repository
 ```bash
-git clone git@github.com:pip-services/pip-services-passwords.git
+git clone git@github.com:pip-services-users/pip-services-passwords-node.git
 ```
 
 Pip.Service team is working to implement packaging and make stable releases available for your 
@@ -38,68 +38,35 @@ as zip downloadable archieves.
 
 ## Run
 
-Add **config.json** file to the root of the microservice folder and set configuration parameters.
-As the starting point you can use example configuration from **config.example.json** file. 
+Add **config.yaml** file to the root of the microservice folder and set configuration parameters.
+As the starting point you can use example configuration from **config.example.yaml** file. 
 
 Example of microservice configuration
-```javascript
-{    
-    "logs": {
-        "descriptor": { 
-            "type": "console"
-        },
-        "options": { 
-            "level": 5
-        }
-    },    
-    "counters": {
-        "descriptor": { 
-            "type": "log"
-        },
-        "options": { 
-            "timeout": 10000
-        }
-    },
-    "persistence": {
-        "descriptor": {
-            "group": "pip-services-passwords",
-            "type": "file"
-        },
-        "options": {
-            "path": "data/passwords.json"
-        }
-    },    
-    "controllers": {
-        "descriptor": {
-            "group": "pip-services-passwords"
-        }
-    },    
-    "client": [],    
-    "service": [
-        {
-            "descriptor": {
-                "group": "pip-services-passwords",
-                "type": "seneca"
-            },
-            "endpoint": {
-                "protocol": "tcp",
-                "host": "localhost",
-                "port": 8814
-            }
-        },
-        {
-            "descriptor": {
-                "group": "pip-services-passwords",
-                "type": "rest"
-            },
-            "endpoint": {
-                "protocol": "http",
-                "host": "localhost",
-                "port": 8014
-            }
-        }
-    ]   
-}
+```yaml
+- descriptor: "pip-services-container:container-info:default:default:1.0"
+  name: "pip-services-passwords"
+  description: "User passwords microservice"
+
+- descriptor: "pip-services-commons:logger:console:default:1.0"
+  level: "trace"
+
+- descriptor: "pip-services-passwords:persistence:file:default:1.0"
+  path: "./data/passwords.json"
+
+- descriptor: "pip-services-passwords:controller:default:default:1.0"
+  options:
+      lock_timeout: 1800000 # 30 mins
+      attempt_timeout: 60000 # 1 min
+      attempt_count: 4 # 4 times
+      rec_expire_timeout: 7200000 # 2 hours
+      lock_enabled: false # set to TRUE to enable locking logic
+      magic_code: null # Universal code
+
+- descriptor: "pip-services-passwords:service:http:default:1.0"
+  connection:
+    protocol: "http"
+    host: "0.0.0.0"
+    port: 3000
 ```
  
 For more information on the microservice configuration see [Configuration Guide](Configuration.md).
@@ -128,14 +95,14 @@ If you use Node.js then you should add dependency to the client SDK into **packa
 
 Inside your code get the reference to the client SDK
 ```javascript
-var sdk = new require('pip-clients-passwords-node').Version1;
+var sdk = new require('pip-clients-passwords-node');
 ```
 
 Define client configuration parameters that match configuration of the microservice external API
 ```javascript
 // Client configuration
 var config = {
-    endpoint: {
+    connection: {
         protocol: 'http',
         host: 'localhost', 
         port: 8014
@@ -146,10 +113,10 @@ var config = {
 Instantiate the client and open connection to the microservice
 ```javascript
 // Create the client instance
-var client = sdk.PasswordsRestClient(config);
+var client = sdk.PasswordsHttpClientV1(config);
 
 // Connect to the microservice
-client.open(function(err) {
+client.open(null, function(err) {
     if (err) {
         console.error('Connection to the microservice failed');
         console.error(err);
@@ -168,7 +135,7 @@ client.setPassword(
     null,
     user_id: '123',
     password: 'test123',
-    function (err, userPassword) {
+    function (err) {
         ...
     }
 );
@@ -180,7 +147,7 @@ client.authenticate(
     null,
     '123',
     'test123',
-    function(err, user) {
+    function(err, authenticated) {
     ...    
     }
 );

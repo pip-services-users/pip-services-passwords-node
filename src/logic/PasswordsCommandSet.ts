@@ -1,10 +1,10 @@
-import { CommandSet } from 'pip-services-runtime-node';
-import { ICommand } from 'pip-services-runtime-node';
-import { Command } from 'pip-services-runtime-node';
-import { Schema } from 'pip-services-runtime-node';
-import { DynamicMap } from 'pip-services-runtime-node';
-import { FilterParams } from 'pip-services-runtime-node';
-import { PagingParams } from 'pip-services-runtime-node';
+import { CommandSet } from 'pip-services-commons-node';
+import { ICommand } from 'pip-services-commons-node';
+import { Command } from 'pip-services-commons-node';
+import { Schema } from 'pip-services-commons-node';
+import { Parameters } from 'pip-services-commons-node';
+import { FilterParams } from 'pip-services-commons-node';
+import { PagingParams } from 'pip-services-commons-node';
 
 import { IPasswordsBusinessLogic } from './IPasswordsBusinessLogic';
 
@@ -27,96 +27,84 @@ export class PasswordsCommandSet extends CommandSet {
 
 	private makeSetPasswordCommand(): ICommand {
 		return new Command(
-			this._logic,
 			"set_password",
-			new Schema()
-				.withProperty("user_id", "string")
-				.withProperty("password", "string")
-			,
-            (correlationId: string, args: DynamicMap, callback: (err: any, result: any) => void) => {
-                let userId = args.getNullableString("user_id");
-                let password = args.getNullableString("password");
-                this._logic.setPassword(correlationId, userId, password, callback);
+			null,
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+                let userId = args.getAsNullableString("user_id");
+                let password = args.getAsNullableString("password");
+                this._logic.setPassword(correlationId, userId, password, (err) => {
+					callback(err, null);
+				});
             }
 		);
 	}
 
 	private makeDeletePasswordCommand(): ICommand {
 		return new Command(
-			this._logic,
 			"delete_password",
-			new Schema()
-				.withProperty("user_id", "string")
-			,
-            (correlationId: string, args: DynamicMap, callback: (err: any, result: any) => void) => {
-                let userId = args.getNullableString("user_id");
-                this._logic.deletePassword(correlationId, userId, callback);
+			null,
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+                let userId = args.getAsNullableString("user_id");
+                this._logic.deletePassword(correlationId, userId, (err) => {
+					callback(err, null);
+				});
             }
 		);
 	}
 
 	private makeAuthenticateCommand(): ICommand {
 		return new Command(
-			this._logic,
 			"authenticate",
-			new Schema()
-				.withProperty("user_id", "string")
-				.withProperty("password", "string")
-			,
-            (correlationId: string, args: DynamicMap, callback: (err: any, result: any) => void) => {
-                let userId = args.getNullableString("user_id");
-                let password = args.getNullableString("password");
-                this._logic.authenticate(correlationId, userId, password, callback);
+			null,
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+                let userId = args.getAsNullableString("user_id");
+                let password = args.getAsNullableString("password");
+                this._logic.authenticate(correlationId, userId, password, (err, authenticated) => {
+					callback(err, { authenticated: authenticated });
+				});
             }
 		);
 	}
 
 	private makeChangePasswordCommand(): ICommand {
 		return new Command(
-			this._logic,
 			"change_password",
-			new Schema()
-				.withProperty("user_id", "string")
-				.withProperty("old_password", "string")
-				.withProperty("new_password", "string")
-			,
-            (correlationId: string, args: DynamicMap, callback: (err: any, result: any) => void) => {
-                let userId = args.getNullableString("user_id");
-                let oldPassword = args.getNullableString("old_password");
-                let newPassword = args.getNullableString("new_password");
-                this._logic.changePassword(correlationId, userId, oldPassword, newPassword, callback);
+			null,
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+                let userId = args.getAsNullableString("user_id");
+                let oldPassword = args.getAsNullableString("old_password");
+                let newPassword = args.getAsNullableString("new_password");
+                this._logic.changePassword(correlationId, userId, oldPassword, newPassword, (err) => {
+					callback(err, null);
+				});
             }
 		);
 	}
 
 	private makeResetPasswordCommand(): ICommand {
 		return new Command(
-			this._logic,
 			"reset_password",
-			new Schema()
-				.withProperty("user_id", "string")
-				.withProperty("password", "string")
-				.withProperty("code", "string")
-			,
-            (correlationId: string, args: DynamicMap, callback: (err: any, result: any) => void) => {
-                let userId = args.getNullableString("user_id");
-                let code = args.getNullableString("code");
-                let password = args.getNullableString("password");
-                this._logic.resetPassword(correlationId, userId, code, password, callback);
+			null,
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+                let userId = args.getAsNullableString("user_id");
+                let code = args.getAsNullableString("code");
+                let password = args.getAsNullableString("password");
+                this._logic.resetPassword(correlationId, userId, code, password, (err) => {
+					callback(err, null);
+				});
             }
 		);
 	}
 
 	private makeRecoverPasswordCommand(): ICommand {
 		return new Command(
-			this._logic,
 			"recover_password",
-			new Schema()
-				.withProperty("user_id", "string")
-			,
-            (correlationId: string, args: DynamicMap, callback: (err: any, result: any) => void) => {
-                let userId = args.getNullableString("user_id");
-                this._logic.recoverPassword(correlationId, userId, callback);
+			null,
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+                let userId = args.getAsNullableString("user_id");
+                this._logic.recoverPassword(correlationId, userId, (err) => {
+					callback(err, null);
+				});
             }
 		);
 	}

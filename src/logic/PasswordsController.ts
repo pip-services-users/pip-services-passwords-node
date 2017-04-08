@@ -2,80 +2,98 @@ let _ = require('lodash');
 let async = require('async');
 let crypto = require('crypto');
 
-import { Category } from 'pip-services-runtime-node';
-import { ComponentDescriptor } from 'pip-services-runtime-node';
-import { ComponentSet } from 'pip-services-runtime-node';
-import { ComponentConfig } from 'pip-services-runtime-node';
-import { DynamicMap } from 'pip-services-runtime-node';
-import { AbstractController } from 'pip-services-runtime-node';
-import { IdGenerator } from 'pip-services-runtime-node';
-import { BadRequestError } from 'pip-services-runtime-node';
-import { NotFoundError } from 'pip-services-runtime-node';
-import { UnauthorizedError } from 'pip-services-runtime-node';
+import { ConfigParams } from 'pip-services-commons-node';
+import { IConfigurable } from 'pip-services-commons-node';
+import { IReferences } from 'pip-services-commons-node';
+import { Descriptor } from 'pip-services-commons-node';
+import { IReferenceable } from 'pip-services-commons-node';
+import { DependencyResolver } from 'pip-services-commons-node';
+import { FilterParams } from 'pip-services-commons-node';
+import { PagingParams } from 'pip-services-commons-node';
+import { DataPage } from 'pip-services-commons-node';
+import { ICommandable } from 'pip-services-commons-node';
+import { CommandSet } from 'pip-services-commons-node';
+import { IdGenerator } from 'pip-services-commons-node';
+import { CompositeLogger } from 'pip-services-commons-node';
+import { BadRequestException } from 'pip-services-commons-node';
+import { NotFoundException } from 'pip-services-commons-node';
+import { UnauthorizedException } from 'pip-services-commons-node';
 
-import { Version1 as EmailV1 } from 'pip-clients-email-node';
-import { Version1 as ActivitiesV1 } from 'pip-clients-activities-node';
+import { IEmailClientV1 } from 'pip-clients-email-node';
+import { EmailConnector } from './EmailConnector';
 
+import { IActivitiesClientV1 } from 'pip-clients-activities-node';
+import { ActivitiesConnector } from './ActivitiesConnector';
+
+import { UserPasswordV1 } from '../data/version1/UserPasswordV1';
 import { IPasswordsPersistence } from '../persistence/IPasswordsPersistence';
+import { IPasswordsBusinessLogic } from './IPasswordsBusinessLogic';
 import { PasswordsCommandSet } from './PasswordsCommandSet';
 
-export class PasswordsController extends AbstractController {
-	/**
-	 * Unique descriptor for the PasswordsController component
-	 */
-	public static Descriptor: ComponentDescriptor = new ComponentDescriptor(
-		Category.Controllers, "pip-services-passwords", "*", "*"
-	);
-    
-    private static DefaultConfig: DynamicMap = DynamicMap.fromValue({
-        options: {
-            lockTimeout: 1800000, // 30 mins
-            attemptTimeout: 60000, // 1 min
-            attemptCount: 4, // 4 times
-            codeExpirationTimeout: 24 * 3600000, // 24 hours
-            lockEnabled: false, // set to TRUE to enable locking logic
-            magicCode: 'magic' // Universal code
-        }
-    });
+export class PasswordsController implements IConfigurable, IReferenceable, ICommandable, IPasswordsBusinessLogic {
+    private static _defaultConfig: ConfigParams = ConfigParams.fromTuples(
+        'dependencies.persistence', 'pip-services-passwords:persistence:*:*:1.0',
+        'dependencies.activities', 'pip-services-activities:client:*:*:1.0',
+        'dependencies.email', 'pip-services-email:client:*:*:1.0',
 
-	private _db: IPasswordsPersistence;
-    private _email: EmailV1.IEmailClient;
-    private _activities: ActivitiesV1.IActivitiesClient;
+        'options.lock_timeout', 1800000, // 30 mins
+        'options.attempt_timeout', 60000, // 1 min
+        'options.attempt_count', 4, // 4 times
+        'options.rec_expire_timeout', 24 * 3600000, // 24 hours
+        'options.lock_enabled', false, // set to TRUE to enable locking logic
+        'options.magic_code', null // Universal code
+    );
 
-    constructor() {
-        super(PasswordsController.Descriptor);
+    private _dependencyResolver: DependencyResolver = new DependencyResolver(PasswordsController._defaultConfig);
+    private _logger: CompositeLogger = new CompositeLogger();
+    private _persistence: IPasswordsPersistence;
+    private _activitiesClient: IActivitiesClientV1;
+    private _activitiesConnector: ActivitiesConnector;
+    private _emailClient: IEmailClientV1;
+    private _emailConnector: EmailConnector;
+    private _commandSet: PasswordsCommandSet;
+
+    private _lockTimeout: number = 1800000; // 30 mins
+    private _attemptTimeout: number = 60000; // 1 min
+    private _attemptCount: number = 4; // 4 times
+    private _recExpireTimeout: number = 24 * 3600000; // 24 hours
+    private _lockEnabled: boolean = false;
+    private _magicCode: string = null;
+
+    public configure(config: ConfigParams): void {
+        config = config.setDefaults(PasswordsController._defaultConfig)
+        this._dependencyResolver.configure(config);
+
+        this._lockTimeout = config.getAsIntegerWithDefault('options.lock_timeout', this._lockTimeout);
+        this._attemptTimeout = config.getAsIntegerWithDefault('options.attempt_timeout', this._attemptTimeout);
+        this._attemptCount = config.getAsIntegerWithDefault('options.attempt_count', this._attemptCount);
+        this._recExpireTimeout = config.getAsIntegerWithDefault('options.rec_expire_timeout', this._recExpireTimeout);
+        this._lockEnabled = config.getAsBooleanWithDefault('options.lock_enabled', this._lockEnabled);
+        this._magicCode = config.getAsStringWithDefault('options.magic_code', this._magicCode);
     }
 
-    public configure(config: ComponentConfig): void {
-        super.configure(config.withDefaults(PasswordsController.DefaultConfig));
+    public setReferences(references: IReferences): void {
+        this._logger.setReferences(references);
+        this._dependencyResolver.setReferences(references);
+        this._persistence = this._dependencyResolver.getOneRequired<IPasswordsPersistence>('persistence');
+        this._activitiesClient = this._dependencyResolver.getOneOptional<IActivitiesClientV1>('activities');
+        this._emailClient = this._dependencyResolver.getOneOptional<IEmailClientV1>('email');
+
+        this._activitiesConnector = new ActivitiesConnector(this._logger, this._activitiesClient);
+        this._emailConnector = new EmailConnector(this._logger, this._emailClient);
     }
 
-    public link(components: ComponentSet): void {
-        // Locate reference to quotes persistence component
-        this._db = <IPasswordsPersistence>components.getOneRequired(
-        	new ComponentDescriptor(Category.Persistence, "pip-services-passwords", '*', '*')
-    	);
-
-        this._email = <EmailV1.IEmailClient>components.getOneOptional(
-        	new ComponentDescriptor(Category.Clients, "pip-services-email", '*', '1.0')
-    	);
-
-        this._activities = <ActivitiesV1.IActivitiesClient>components.getOneOptional(
-        	new ComponentDescriptor(Category.Clients, "pip-services-activities", '*', '1.0')
-    	);
-        
-        super.link(components);
-
-        // Add commands
-        let commands = new PasswordsCommandSet(this);
-        this.addCommandSet(commands);
+    public getCommandSet(): CommandSet {
+        if (this._commandSet == null)
+            this._commandSet = new PasswordsCommandSet(this);
+        return this._commandSet;
     }
 
     private generateVerificationCode(): string {
-        return IdGenerator.short();
+        return IdGenerator.nextShort();
     }
 
-    private hashPassword(password: string) {
+    private hashPassword(password: string): string {
         if (!password) return null;
 
         let shaSum = crypto.createHash('sha256');
@@ -83,89 +101,71 @@ export class PasswordsController extends AbstractController {
         return shaSum.digest('hex');
     }
 
-    private verifyPassword(correlationId: string, password: string, callback: any) {
+    private verifyPassword(correlationId: string, password: string,
+        callback: (err: any) => void): boolean {
+
         if (!password) {
             callback(
-                new BadRequestError(
-                    this, 
-                    'NoPassword', 
+                new BadRequestException(
+                    correlationId, 
+                    'NO_PASSWORD', 
                     'Missing user password'
-                ).withCorrelationId(correlationId)
+                )
             );
             return false;
         }
+
         if (password.length < 6 || password.length > 20) {
             callback(
-                new BadRequestError(
-                    this, 
-                    'BadPassword', 
+                new BadRequestException(
+                    correlationId, 
+                    'BAD_PASSWORD', 
                     'User password should be 5 to 20 symbols long'
-                ).withCorrelationId(correlationId)
+                )
             );
             return false;
         }
         return true;
     }
 
-    private readUserPassword(correlationId: string, userId: string, callback: any): void {
-        this._db.getUserPasswordById(
+    private readUserPassword(correlationId: string, userId: string,
+        callback: (err: any, userPassword: UserPasswordV1) => void): void {
+        this._persistence.getOneById(
             correlationId,
             userId,
             (err, item) => {
                 if (item == null && err == null) {
-                    err = new NotFoundError(
-                        null,
-                        'UserPasswordNotFound',
-                        'Password for user ' + userId + ' was not found'
-                    )
-                    .withCorrelationId(correlationId)
-                    .withDetails(userId);
+                    err = new NotFoundException(
+                        correlationId,
+                        'USER_NOT_FOUND',
+                        'User ' + userId + ' was not found'
+                    ).withDetails('user_id', userId);
                 }
                 callback(err, item);
             }
         );
     }
-    
-    private sendEmail(correlationId: string, userId: string, message: any): void {
-        if (this._email) {
-            this._email.sendToUser(correlationId, userId, message, (err) => {
-                if (err) this.error(correlationId, 'Failed while sending email', err);
-            });
-        }
-    }
- 
-    private logActivity(correlationId: string, activity: any) {
-        if (this._activities) {
-            this._activities.logPartyActivity(
-                correlationId,
-                activity,
-                (err) => {
-                    if (err) this.error(correlationId, 'Failed while logging user activity', err);
-                }
-            );
-        }
-    }
-    
-    public setPassword(correlationId: string, userId: string, password: string, callback: any) {
+         
+    public setPassword(correlationId: string, userId: string, password: string,
+        callback: (err: any) => void): void {
         password = this.hashPassword(password);
         
-        let userPassword: any = {
-            id: userId,
-            password: password
-        };
-        
-        this._db.createUserPassword(correlationId, userPassword, callback);
+        let userPassword = new UserPasswordV1(userId, password);
+        this._persistence.create(correlationId, userPassword, (err) => {
+            callback(err); 
+        });
     } 
 
-    public deletePassword(correlationId: string, userId: string, callback: any) {
-        this._db.deleteUserPassword(correlationId, userId, callback);
+    public deletePassword(correlationId: string, userId: string,
+        callback: (err: any) => void): void {
+        this._persistence.deleteById(correlationId, userId, callback);
     } 
     
-    public authenticate(correlationId: string, userId: string, password: string, callback: any) {
+    public authenticate(correlationId: string, userId: string, password: string,
+        callback: (err: any, authenticated: boolean) => void): void {
         let hashedPassword = this.hashPassword(password);
         let currentTime = new Date();
-        let userPassword;
-        let options = this._config.getOptions();
+        let userPassword: UserPasswordV1;
 
         async.series([
         // Retrieve user password
@@ -182,74 +182,63 @@ export class PasswordsController extends AbstractController {
         // Check password and process failed attempts
             (callback) => {
                 let passwordMatch = userPassword.password == hashedPassword;
-                let lastFailureTimeout = userPassword.pwd_last_fail
-                    ? currentTime.getTime() - userPassword.pwd_last_fail.getTime() : null;
+                let lastFailureTimeout = userPassword.fail_time
+                    ? currentTime.getTime() - userPassword.fail_time.getTime() : null;
 
                 //verify user account is still locked from last authorization failure or just tell user that it's user is locked
-                if (!options.getBoolean('lockEnabled') && passwordMatch)
-                    userPassword.lock = false;
+                if (!this._lockEnabled && passwordMatch)
+                    userPassword.locked = false;
                 else {
-                    if (passwordMatch && userPassword.lock && lastFailureTimeout > options.getInteger('lockTimeout')) 
-                        userPassword.lock = false; //unlock user
-                    else if (userPassword.lock) {
+                    if (passwordMatch && userPassword.locked && lastFailureTimeout > this._lockTimeout) 
+                        userPassword.locked = false; //unlock user
+                    else if (userPassword.locked) {
                         callback(
-                            new UnauthorizedError(
-                                this,
-                                'AccountLocked',
+                            new UnauthorizedException(
+                                correlationId,
+                                'ACCOUNT_LOCKED',
                                 'Account for user ' + userId + ' is locked'
                             )
-                            .withCorrelationId(correlationId)
-                            .withDetails(userId)
+                            .withDetails('user_id', userId)
                         );
                         return;
                     }
 
                     if (!passwordMatch) {
-                        if (lastFailureTimeout < options.getInteger('attemptTimeout'))
-                            userPassword.pwd_fail_count = userPassword.pwd_fail_count ? userPassword.pwd_fail_count + 1 : 1;
+                        if (lastFailureTimeout < this._attemptTimeout)
+                            userPassword.fail_count = userPassword.fail_count ? userPassword.fail_count + 1 : 1;
 
-                        userPassword.pwd_last_fail = currentTime;
+                        userPassword.fail_time = currentTime;
 
-                        if (userPassword.pwd_fail_count == options.getInteger('attemptCount')) {
-                            userPassword.lock = true;
+                        if (userPassword.fail_count >= this._attemptCount) {
+                            userPassword.locked = true;
                             
                             callback(
-                                new UnauthorizedError(
-                                    this,
-                                    'AccountLocked',
+                                new UnauthorizedException(
+                                    correlationId,
+                                    'ACCOUNT_LOCKED',
                                     'Number of attempts exceeded. Account for user ' + userId + ' was locked'
                                 )
-                                .withCorrelationId(correlationId)
-                                .withDetails(userId)
+                                .withDetails('user_id', userId)
                             );
 
-                            this.sendEmail(
-                                correlationId,
-                                userId, 
-                                {
-                                    textTemplate: __dirname + '/../../../templates/account_locked.txt',
-                                    htmlTemplate: __dirname + '/../../../templates/account_locked.html',
-                                    subjectTemplate: __dirname + '/../../../templates/account_locked_subject.txt'
-                                }
-                            );
+                            this._emailConnector.sendAccountLockedEmail(correlationId, userId);
                         } else { 
                             callback(
-                                new UnauthorizedError(
-                                    this,
-                                    'WrongPassword',
+                                new UnauthorizedException(
+                                    correlationId,
+                                    'WRONG_PASSWORD',
                                     'Invalid password'
                                 )
-                                .withCorrelationId(correlationId)
-                                .withDetails(userId)
+                                .withDetails('user_id', userId)
                             );
                         }
 
-                        this._db.updateUserPassword(
+                        this._persistence.update(
                             correlationId,
-                            userId,
                             userPassword,
                             (err) => {
-                                if (err) this.error(correlationId, 'Failed while saving user account');
+                                if (err)
+                                    this._logger.error(correlationId, err, 'Failed to save user password');
                             }
                         );
 
@@ -262,37 +251,29 @@ export class PasswordsController extends AbstractController {
         // Perform authentication and save user
             (callback) => {
                 // Update user last signin date
-                userPassword.pwd_fail_count = 0;
-                userPassword.pwd_last_fail = null;
+                userPassword.fail_count = 0;
+                userPassword.fail_time = null;
 
-                this._db.updateUserPassword(
+                this._persistence.update(
                     correlationId,
-                    userId,
                     userPassword,
                     callback
                 );
             },
         // Asynchronous post-processing
             (callback) => {
-                this.logActivity(
-                    correlationId,
-                    {
-                        type: 'signin',
-                        party: { 
-                            id: userId,
-                            name: '' // Todo: Read user account?
-                        }
-                    }
-                );
-
+                this._activitiesConnector.logSigninActivity(correlationId, userId);
                 callback();
             }
         ], (err) => {
-            callback(err, userPassword);
+            if (err) callback(err, false);
+            else callback(null, userPassword != null);
         });
     }
 
-    public changePassword(correlationId: string, userId: string, oldPassword: string, newPassword: string, callback) {
+    public changePassword(correlationId: string, userId: string, oldPassword: string, newPassword: string,
+        callback: (err: any) => void): void {
+
         let userPassword;
 
         if (!this.verifyPassword(correlationId, newPassword, callback)) 
@@ -318,26 +299,24 @@ export class PasswordsController extends AbstractController {
                 // Password must be different then the previous one
                 if (userPassword.password != oldPassword) {
                     callback(
-                        new UnauthorizedError(
-                            this,
-                            'WrongPassword', 
+                        new UnauthorizedException(
+                            correlationId,
+                            'WRONG_PASSWORD', 
                             'Invalid password'
                         )
-                        .withCorrelationId(correlationId)
-                        .withDetails(userPassword.name)
+                        .withDetails('user_id', userId)
                     );
                     return;
                 }
 
                 if (oldPassword === newPassword) {
                     callback(
-                        new BadRequestError(
-                            this,
-                            'PasswordsSame',
+                        new BadRequestException(
+                            correlationId,
+                            'PASSWORD_NOT_CHANGED',
                             'Old and new passwords are identical'
                         )
-                        .withCorrelationId(correlationId)
-                        .withDetails(userPassword.name)
+                        .withDetails('user_id', userId)
                     );
                     return;
                 }
@@ -352,46 +331,28 @@ export class PasswordsController extends AbstractController {
             },
         // Save the new password
             (callback) => {
-                this._db.updateUserPassword(
+                this._persistence.update(
                     correlationId,
-                    userId,
                     userPassword,
                     callback
                 );
             },
         // Asynchronous post-processing
             (callback) => {
-                this.logActivity(
-                    correlationId,
-                    {
-                        type: 'password changed',
-                        party: {
-                            id: userId,
-                            name: '' // Todo: Read user account?
-                        }
-                    }
-                );
-
-                this.sendEmail(
-                    correlationId,
-                    userId,
-                    {
-                        textTemplate: __dirname + '/../../../templates/password_changed.txt',
-                        htmlTemplate: __dirname + '/../../../templates/password_changed.html',
-                        subjectTemplate: __dirname + '/../../../templates/password_changed_subject.txt'
-                    }
-                );
+                this._activitiesConnector.logPasswordChangedActivity(correlationId, userId);
+                this._emailConnector.sendPasswordChangedEmail(correlationId, userId);
 
                 callback();
             }
         ], (err) => {
-            if (callback) callback(err, userPassword);
+            if (callback) callback(err);
         });
     }
 
-    public resetPassword(correlationId: string, userId: string, code: string, password: string, callback) {
-        let userPassword;
-        let options = this._config.getOptions();
+    public resetPassword(correlationId: string, userId: string, code: string, password: string,
+        callback: (err: any) => void): void {
+
+        let userPassword: UserPasswordV1;
 
         if (!this.verifyPassword(correlationId, password, callback)) 
             return;
@@ -413,83 +374,62 @@ export class PasswordsController extends AbstractController {
         // Validate reset code and reset the password
             (callback) => {
                 // Todo: Remove magic code
-                if (userPassword.pwd_rec_code != code && code != options.getNullableString('magicCode')) {
+                if (userPassword.rec_code != code && code != this._magicCode) {
                     callback(
-                        new UnauthorizedError(
-                            this,
-                            'WrongCode',
+                        new UnauthorizedException(
+                            correlationId,
+                            'WRONG_CODE',
                             'Invalid password recovery code ' + code
                         )
-                        .withCorrelationId(correlationId)
-                        .withDetails(userPassword.name)
+                        .withDetails('user_id', userId)
                     );
                     return;
                 }
 
                 // Check if code already expired
-                if (!(userPassword.pwd_rec_expire > new Date())) {
+                if (!(userPassword.rec_expire_time > new Date())) {
                     callback(
-                        new UnauthorizedError(
-                            this,
-                            'CodeExpired',
+                        new UnauthorizedException(
+                            correlationId,
+                            'CODE_EXPIRED',
                             'Password recovery code ' + code + ' expired'
                         )
-                        .withCorrelationId(correlationId)
-                        .withDetails(userPassword.name)
+                        .withDetails('user_id', userId)
                     );
                     return;
                 }
 
                 // Reset the password
                 userPassword.password = password;
-                userPassword.pwd_rec_code = null;
-                userPassword.pwd_rec_expire = null;
-                userPassword.lock = false;
+                userPassword.rec_code = null;
+                userPassword.rec_expire_time = null;
+                userPassword.locked = false;
 
                 callback();
             },
         // Save the new password
             (callback) => {
-                this._db.updateUserPassword(
+                this._persistence.update(
                     correlationId,
-                    userId,
                     userPassword,
                     callback
                 );
             },
         // Asynchronous post-processing
             (callback) => {
-                this.logActivity(
-                    correlationId,
-                    {
-                        type: 'password changed',
-                        party: {
-                            id: userId,
-                            name: '' // Todo: Read user account?
-                        }
-                    }
-                );
-
-                this.sendEmail(
-                    correlationId,
-                    userId,
-                    {
-                        textTemplate: __dirname + '/../../../templates/password_changed.txt',
-                        htmlTemplate: __dirname + '/../../../templates/password_changed.html',
-                        subjectTemplate: __dirname + '/../../../templates/password_changed_subject.txt'
-                    }
-                );
-
+                this._activitiesConnector.logPasswordChangedActivity(correlationId, userId);
+                this._emailConnector.sendPasswordChangedEmail(correlationId, userId);
                 callback();
             }
         ], (err) => {
-            if (callback) callback(err, userPassword);
-        })
+            if (callback) callback(err);
+        });
     }
 
-    public recoverPassword(correlationId: string, userId: string, callback) {
-        let userPassword;
-        let options = this._config.getOptions();
+    public recoverPassword(correlationId: string, userId: string,
+        callback: (err: any) => void): void {
+
+        let userPassword: UserPasswordV1;
 
         async.series([
         // Retrieve user
@@ -506,49 +446,26 @@ export class PasswordsController extends AbstractController {
         // Update and save recovery code
             (callback) => {
                 let currentTicks = new Date().getTime();
-                let expireTicks = currentTicks + options.getInteger('codeExpirationTimeout');
+                let expireTicks = currentTicks + this._recExpireTimeout;
                 let expireTime = new Date(expireTicks);
 
-                userPassword.pwd_rec_code = this.generateVerificationCode();
-                userPassword.pwd_rec_expire = expireTime;
+                userPassword.rec_code = this.generateVerificationCode();
+                userPassword.rec_expire_time = expireTime;
 
-                this._db.updateUserPassword(
+                this._persistence.update(
                     correlationId,
-                    userId,
                     userPassword,
                     callback
                 );
             },
         // Asynchronous post-processing
             (callback) => {
-                this.logActivity(
-                    correlationId,
-                    {
-                        type: 'password recovered',
-                        party: { 
-                            id: userId,
-                            name: ''  // Todo: Retrieve user account
-                        }
-                    }
-                );
-
-                this.sendEmail(
-                    correlationId,
-                    userId,
-                    {
-                        textTemplate: __dirname + '/../../../templates/recover_password.txt',
-                        htmlTemplate: __dirname + '/../../../templates/recover_password.html',
-                        subjectTemplate: __dirname + '/../../../templates/recover_password_subject.txt',
-                        content: {
-                            code: userPassword.pwd_rec_code
-                        },
-                    }
-                );
-
+                this._activitiesConnector.logPasswordRecoveredActivity(correlationId, userId);
+                this._emailConnector.sendRecoverPasswordEmail(correlationId, userId);
                 callback();
             }
         ], (err) => {
-            if (callback) callback(err, userPassword);
+            if (callback) callback(err);
         });
     }
     

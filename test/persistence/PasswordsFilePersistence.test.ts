@@ -1,39 +1,28 @@
-import { ComponentSet } from 'pip-services-runtime-node';
-import { ComponentConfig } from 'pip-services-runtime-node';
-import { DynamicMap } from 'pip-services-runtime-node';
+import { ConfigParams } from 'pip-services-commons-node';
 
 import { PasswordsFilePersistence } from '../../src/persistence/PasswordsFilePersistence';
 import { PasswordsPersistenceFixture } from './PasswordsPersistenceFixture';
 
-let config = ComponentConfig.fromValue({
-    descriptor: {
-        type: 'file'
-    },
-    options: {
-        path: './data/passwords.test.json',
-        data: []
-    }
-});
-
 suite('PasswordsFilePersistence', ()=> {
-    let db, fixture;
+    let persistence: PasswordsFilePersistence;
+    let fixture: PasswordsPersistenceFixture;
     
     setup((done) => {
-        db = new PasswordsFilePersistence();
-        db.configure(config);
+        persistence = new PasswordsFilePersistence('./data/passwords.test.json');
 
-        fixture = new PasswordsPersistenceFixture(db);
+        fixture = new PasswordsPersistenceFixture(persistence);
         
-        db.link(new ComponentSet());
-        db.open(done);
+        persistence.open(null, (err) => {
+            if (err) done(err);
+            else persistence.clear(null, done);
+        });
     });
     
     teardown((done) => {
-        db.close(done);
+        persistence.close(null, done);
     });
         
-    test('Basic Operations', (done) => {
-        fixture.testBasicOperations(done);
+    test('CRUD Operations', (done) => {
+        fixture.testCrudOperations(done);
     });
-
 });

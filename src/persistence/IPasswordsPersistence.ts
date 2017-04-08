@@ -1,8 +1,19 @@
-import { IPersistence } from 'pip-services-runtime-node';
+import { IGetter } from 'pip-services-data-node';
+import { IWriter } from 'pip-services-data-node';
+import { UserPasswordV1 } from '../data/version1/UserPasswordV1';
 
-export interface IPasswordsPersistence extends IPersistence {
-    getUserPasswordById(correlationId: string, userId: string, callback: any);
-    createUserPassword(correlationId: string, userPassword: any, callback: any);
-    updateUserPassword(correlationId: string, userId: string, userPassword: any, callback: any);
-    deleteUserPassword(correlationId: string, userId: string, callback: any);
+export interface IPasswordsPersistence 
+    extends IGetter<UserPasswordV1, string>, IWriter<UserPasswordV1, string> {
+
+    getOneById(correlationId: string, userId: string,
+        callback: (err: any, item: UserPasswordV1) => void): void;
+
+    create(correlationId: string, item: UserPasswordV1,
+        callback: (err: any, item: UserPasswordV1) => void): void;
+
+    update(correlationId: string, item: UserPasswordV1,
+        callback: (err: any, item: UserPasswordV1) => void): void;
+
+    deleteById(correlationId: string, id: string,
+        callback: (err: any, item: UserPasswordV1) => void): void;
 }

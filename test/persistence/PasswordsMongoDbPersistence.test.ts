@@ -1,38 +1,33 @@
-import { ComponentSet } from 'pip-services-runtime-node';
-import { ComponentConfig } from 'pip-services-runtime-node';
-import { DynamicMap } from 'pip-services-runtime-node';
+import { YamlConfigReader } from 'pip-services-commons-node';
 
 import { PasswordsMongoDbPersistence } from '../../src/persistence/PasswordsMongoDbPersistence';
 import { PasswordsPersistenceFixture } from './PasswordsPersistenceFixture';
 
-let options = new DynamicMap(require('../../../config/config'));
-let dbOptions = ComponentConfig.fromValue(options.getNullableMap('persistence'));
-
 suite('PasswordsMongoDbPersistence', ()=> {
-    // Skip test if mongodb is not configured
-    if (dbOptions.getRawContent().getString('descriptor.type') != 'mongodb')
-        return; 
-    
-    let db = new PasswordsMongoDbPersistence();
-    db.configure(dbOptions);
+    let persistence: PasswordsMongoDbPersistence;
+    let fixture: PasswordsPersistenceFixture;
 
-    let fixture = new PasswordsPersistenceFixture(db);
-
-    suiteSetup((done) => {
-        db.link(new ComponentSet());
-        db.open(done);
-    });
-    
-    suiteTeardown((done) => {
-        db.close(done);
-    });
-    
     setup((done) => {
-        db.clearTestData(done);
+        let config = YamlConfigReader.readConfig(null, './config/test_connections.yaml');
+        let dbConfig = config.getSection('mongodb');
+
+        persistence = new PasswordsMongoDbPersistence();
+        persistence.configure(dbConfig);
+
+        fixture = new PasswordsPersistenceFixture(persistence);
+
+        persistence.open(null, (err: any) => {
+            persistence.clear(null, (err) => {
+                done(err);
+            });
+        });
     });
     
-    test('Basic Operations', (done) => {
-        fixture.testBasicOperations(done);
+    teardown((done) => {
+        persistence.close(null, done);
     });
 
+    test('CRUD Operations', (done) => {
+        fixture.testCrudOperations(done);
+    });
 });

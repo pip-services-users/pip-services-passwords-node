@@ -1,11 +1,4 @@
-<a name="1.0.0"></a>
-### 1.0.0 (2016-06-20)
-
-#### Breaking Changes
-* **New Design** Migrated to Runtime 1.0 with new design
-
-<a name="0.0.1"></a>
-### 0.0.1 (2016-06-07)
+<a name="1.0.0"></a> ### 1.0.0 (2017-04-05)
 
 #### Features
 * **mongodb** MongoDB data access using Mongoose framework

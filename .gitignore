@@ -1,6 +1,8 @@
 /node_modules
 /npm-debug.log
 /.idea
-/config/config.json
+/config/config.yaml
+/config/test_connections.yaml
 /data/passwords.test.json
-/dist
+/data/passwords.json
+/obj/test

@@ -2,25 +2,23 @@ let async = require('async');
 let assert = require('chai').assert;
 
 import { IPasswordsPersistence } from '../../src/persistence/IPasswordsPersistence';
+import { UserPasswordV1 } from '../../src/data/version1/UserPasswordV1';
 
-let USER_PWD = {
-    id: '1',
-    password: 'password123'
-};
+let USER_PWD = new UserPasswordV1('1', 'password123');
 
 export class PasswordsPersistenceFixture {
-    private _db: IPasswordsPersistence;
+    private _persistence: IPasswordsPersistence;
     
-    constructor(db) {
-        assert.isNotNull(db);
-        this._db = db;
+    constructor(persistence) {
+        assert.isNotNull(persistence);
+        this._persistence = persistence;
     }
 
-    testBasicOperations(done) {
+    public testCrudOperations(done) {
         async.series([
         // Create user password
             (callback) => {
-                this._db.createUserPassword(
+                this._persistence.create(
                     null,
                     USER_PWD,
                     (err, userPassword) => {
@@ -29,7 +27,7 @@ export class PasswordsPersistenceFixture {
                         assert.isObject(userPassword);
                         assert.equal(userPassword.id, USER_PWD.id);
                         assert.isNotNull(userPassword.password);
-                        assert.isFalse(userPassword.lock);
+                        assert.isFalse(userPassword.locked);
 
                         callback();
                     }
@@ -37,10 +35,9 @@ export class PasswordsPersistenceFixture {
             },
         // Update the user password
             (callback) => {
-                this._db.updateUserPassword(
+                this._persistence.update(
                     null,
-                    USER_PWD.id,
-                    { password: 'newpwd123' },
+                    new UserPasswordV1('1', 'newpwd123' ),
                     (err, userPassword) => {
                         assert.isNull(err);
                         
@@ -54,7 +51,7 @@ export class PasswordsPersistenceFixture {
             },
         // Delete the user password
             (callback) => {
-                this._db.deleteUserPassword(
+                this._persistence.deleteById(
                     null,
                     USER_PWD.id,
                     (err) => {
@@ -66,7 +63,7 @@ export class PasswordsPersistenceFixture {
             },
         // Try to get delete user
             (callback) => {
-                this._db.getUserPasswordById(
+                this._persistence.getOneById(
                     null,
                     USER_PWD.id,
                     (err, userPassword) => {

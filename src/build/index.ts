@@ -1,0 +1,1 @@
+export { PasswordsFactory } from './PasswordsFactory';
