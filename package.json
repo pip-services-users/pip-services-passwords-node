@@ -42,6 +42,7 @@
         "pip-services-container-node": "^2.0.0",
         "pip-services-data-node": "^2.0.0",
         "pip-services-net-node": "^2.0.0",
+        "pip-services-aws-node": "^1.0.0",
         "pip-clients-activities-node": "git+ssh://git@github.com:pip-services-users/pip-clients-activities-node.git",
         "pip-clients-email-node": "git+ssh://git@github.com:pip-services-users/pip-clients-email-node.git"
     },
@@ -57,7 +58,6 @@
         "restify": "^4.3.0",
         "chai": "*",
         "matcha": "*",
-        "memjs": "*",
         "mocha": "*"
     }
 }

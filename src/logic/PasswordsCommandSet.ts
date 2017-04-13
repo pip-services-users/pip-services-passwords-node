@@ -1,7 +1,8 @@
 import { CommandSet } from 'pip-services-commons-node';
 import { ICommand } from 'pip-services-commons-node';
 import { Command } from 'pip-services-commons-node';
-import { Schema } from 'pip-services-commons-node';
+import { ObjectSchema } from 'pip-services-commons-node';
+import { TypeCode } from 'pip-services-commons-node';
 import { Parameters } from 'pip-services-commons-node';
 import { FilterParams } from 'pip-services-commons-node';
 import { PagingParams } from 'pip-services-commons-node';
@@ -28,7 +29,9 @@ export class PasswordsCommandSet extends CommandSet {
 	private makeSetPasswordCommand(): ICommand {
 		return new Command(
 			"set_password",
-			null,
+			new ObjectSchema(true)
+				.withRequiredProperty('user_id', TypeCode.String)
+				.withRequiredProperty('password', TypeCode.String),
             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 let userId = args.getAsNullableString("user_id");
                 let password = args.getAsNullableString("password");
@@ -42,7 +45,8 @@ export class PasswordsCommandSet extends CommandSet {
 	private makeDeletePasswordCommand(): ICommand {
 		return new Command(
 			"delete_password",
-			null,
+			new ObjectSchema(true)
+				.withRequiredProperty('user_id', TypeCode.String),
             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 let userId = args.getAsNullableString("user_id");
                 this._logic.deletePassword(correlationId, userId, (err) => {
@@ -55,7 +59,9 @@ export class PasswordsCommandSet extends CommandSet {
 	private makeAuthenticateCommand(): ICommand {
 		return new Command(
 			"authenticate",
-			null,
+			new ObjectSchema(true)
+				.withRequiredProperty('user_id', TypeCode.String)
+				.withRequiredProperty('password', TypeCode.String),
             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 let userId = args.getAsNullableString("user_id");
                 let password = args.getAsNullableString("password");
@@ -69,7 +75,10 @@ export class PasswordsCommandSet extends CommandSet {
 	private makeChangePasswordCommand(): ICommand {
 		return new Command(
 			"change_password",
-			null,
+			new ObjectSchema(true)
+				.withRequiredProperty('user_id', TypeCode.String)
+				.withRequiredProperty('old_password', TypeCode.String)
+				.withRequiredProperty('new_password', TypeCode.String),
             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 let userId = args.getAsNullableString("user_id");
                 let oldPassword = args.getAsNullableString("old_password");
@@ -84,7 +93,10 @@ export class PasswordsCommandSet extends CommandSet {
 	private makeResetPasswordCommand(): ICommand {
 		return new Command(
 			"reset_password",
-			null,
+			new ObjectSchema(true)
+				.withRequiredProperty('user_id', TypeCode.String)
+				.withRequiredProperty('code', TypeCode.String)
+				.withRequiredProperty('password', TypeCode.String),
             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 let userId = args.getAsNullableString("user_id");
                 let code = args.getAsNullableString("code");
@@ -99,7 +111,8 @@ export class PasswordsCommandSet extends CommandSet {
 	private makeRecoverPasswordCommand(): ICommand {
 		return new Command(
 			"recover_password",
-			null,
+			new ObjectSchema(true)
+				.withRequiredProperty('user_id', TypeCode.String),
             (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
                 let userId = args.getAsNullableString("user_id");
                 this._logic.recoverPassword(correlationId, userId, (err) => {
