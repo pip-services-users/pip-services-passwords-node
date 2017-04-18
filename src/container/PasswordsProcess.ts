@@ -7,7 +7,7 @@ export class PasswordsProcess extends ProcessContainer {
 
     public constructor() {
         super("passwords", "User passwords microservice");
-        this._factories.add(new PasswordsFactory);
+        this._factories.add(new PasswordsFactory());
     }
 
 }

@@ -5,7 +5,7 @@ const PasswordsFactory_1 = require("../build/PasswordsFactory");
 class PasswordsProcess extends pip_services_container_node_1.ProcessContainer {
     constructor() {
         super("passwords", "User passwords microservice");
-        this._factories.add(new PasswordsFactory_1.PasswordsFactory);
+        this._factories.add(new PasswordsFactory_1.PasswordsFactory());
     }
 }
 exports.PasswordsProcess = PasswordsProcess;
