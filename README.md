@@ -26,6 +26,33 @@ This microservice has optional dependencies on the following microservices:
   - [HTTP Version 1](doc/HttpProtocolV1.md)
   - [Seneca Version 1](doc/SenecaProtocolV1.md)
 
+##  Contract
+
+Logical contract of the microservice is presented below. For physical implementation (HTTP/REST, Thrift, Seneca, Lambda, etc.),
+please, refer to documentation of the specific protocol.
+
+```typescript
+interface IPasswordsV1 {
+    setPassword(correlationId: string, userId: string, password: string,
+        callback: (err: any) => void): void;
+
+    deletePassword(correlationId: string, userId: string,
+        callback: (err: any) => void): void;
+
+    authenticate(correlationId: string, userId: string, password: string,
+        callback: (err: any, authenticated: boolean) => void): void;
+
+    changePassword(correlationId: string, userId: string, oldPassword: string, newPassword: string,
+        callback: (err: any) => void): void;
+
+    resetPassword(correlationId: string, userId: string, code: string, password: string,
+        callback: (err: any) => void): void;
+
+    recoverPassword(correlationId: string, userId: string,
+        callback: (err: any) => void): void;
+}
+```
+
 ## Download
 
 Right now the only way to get the microservice is to check it out directly from github repository
