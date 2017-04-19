@@ -1,1 +1,1 @@
-export { PasswordsFactory } from './PasswordsFactory';
+export { PasswordsServiceFactory } from './PasswordsServiceFactory';

@@ -8,7 +8,7 @@ import { PasswordsController } from '../logic/PasswordsController';
 import { PasswordsHttpServiceV1 } from '../services/version1/PasswordsHttpServiceV1';
 import { PasswordsSenecaServiceV1 } from '../services/version1/PasswordsSenecaServiceV1'; 
 
-export class PasswordsFactory extends Factory {
+export class PasswordsServiceFactory extends Factory {
 	public static Descriptor = new Descriptor("pip-services-passwords", "factory", "default", "default", "1.0");
 	public static MemoryPersistenceDescriptor = new Descriptor("pip-services-passwords", "persistence", "memory", "*", "1.0");
 	public static FilePersistenceDescriptor = new Descriptor("pip-services-passwords", "persistence", "file", "*", "1.0");
@@ -19,12 +19,12 @@ export class PasswordsFactory extends Factory {
 	
 	constructor() {
 		super();
-		this.registerAsType(PasswordsFactory.MemoryPersistenceDescriptor, PasswordsMemoryPersistence);
-		this.registerAsType(PasswordsFactory.FilePersistenceDescriptor, PasswordsFilePersistence);
-		this.registerAsType(PasswordsFactory.MongoDbPersistenceDescriptor, PasswordsMongoDbPersistence);
-		this.registerAsType(PasswordsFactory.ControllerDescriptor, PasswordsController);
-		this.registerAsType(PasswordsFactory.SenecaServiceDescriptor, PasswordsSenecaServiceV1);
-		this.registerAsType(PasswordsFactory.HttpServiceDescriptor, PasswordsHttpServiceV1);
+		this.registerAsType(PasswordsServiceFactory.MemoryPersistenceDescriptor, PasswordsMemoryPersistence);
+		this.registerAsType(PasswordsServiceFactory.FilePersistenceDescriptor, PasswordsFilePersistence);
+		this.registerAsType(PasswordsServiceFactory.MongoDbPersistenceDescriptor, PasswordsMongoDbPersistence);
+		this.registerAsType(PasswordsServiceFactory.ControllerDescriptor, PasswordsController);
+		this.registerAsType(PasswordsServiceFactory.SenecaServiceDescriptor, PasswordsSenecaServiceV1);
+		this.registerAsType(PasswordsServiceFactory.HttpServiceDescriptor, PasswordsHttpServiceV1);
 	}
 	
 }
