@@ -78,6 +78,11 @@ class PasswordsController {
             callback(err, item);
         });
     }
+    validatePassword(correlationId, password, callback) {
+        if (this.verifyPassword(correlationId, password, callback))
+            return;
+        callback(null);
+    }
     setPassword(correlationId, userId, password, callback) {
         password = this.hashPassword(password);
         let userPassword = new UserPasswordV1_1.UserPasswordV1(userId, password);

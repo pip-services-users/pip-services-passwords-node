@@ -1,4 +1,5 @@
 export interface IPasswordsBusinessLogic {
+    validatePassword(correlationId: string, password: string, callback: (err: any) => void): void;
     setPassword(correlationId: string, userId: string, password: string, callback: (err: any) => void): void;
     deletePassword(correlationId: string, userId: string, callback: (err: any) => void): void;
     authenticate(correlationId: string, userId: string, password: string, callback: (err: any, authenticated: boolean) => void): void;

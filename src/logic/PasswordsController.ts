@@ -146,6 +146,15 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         );
     }
          
+    public validatePassword(correlationId: string, password: string,
+        callback: (err: any) => void): void {
+                    
+        if (this.verifyPassword(correlationId, password, callback))
+            return;
+
+        callback(null);
+    } 
+
     public setPassword(correlationId: string, userId: string, password: string,
         callback: (err: any) => void): void {
         password = this.hashPassword(password);

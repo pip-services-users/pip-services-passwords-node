@@ -28,6 +28,7 @@ export declare class PasswordsController implements IConfigurable, IReferenceabl
     private hashPassword(password);
     private verifyPassword(correlationId, password, callback);
     private readUserPassword(correlationId, userId, callback);
+    validatePassword(correlationId: string, password: string, callback: (err: any) => void): void;
     setPassword(correlationId: string, userId: string, password: string, callback: (err: any) => void): void;
     deletePassword(correlationId: string, userId: string, callback: (err: any) => void): void;
     authenticate(correlationId: string, userId: string, password: string, callback: (err: any, authenticated: boolean) => void): void;
