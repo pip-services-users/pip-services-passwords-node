@@ -17,7 +17,6 @@ import { IdGenerator } from 'pip-services-commons-node';
 import { CompositeLogger } from 'pip-services-commons-node';
 import { BadRequestException } from 'pip-services-commons-node';
 import { NotFoundException } from 'pip-services-commons-node';
-import { UnauthorizedException } from 'pip-services-commons-node';
 
 import { IEmailClientV1 } from 'pip-clients-email-node';
 import { EmailConnector } from './EmailConnector';
@@ -202,7 +201,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                         userPassword.locked = false; //unlock user
                     else if (userPassword.locked) {
                         callback(
-                            new UnauthorizedException(
+                            new BadRequestException(
                                 correlationId,
                                 'ACCOUNT_LOCKED',
                                 'Account for user ' + userId + ' is locked'
@@ -222,7 +221,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                             userPassword.locked = true;
                             
                             callback(
-                                new UnauthorizedException(
+                                new BadRequestException(
                                     correlationId,
                                     'ACCOUNT_LOCKED',
                                     'Number of attempts exceeded. Account for user ' + userId + ' was locked'
@@ -233,7 +232,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                             this._emailConnector.sendAccountLockedEmail(correlationId, userId);
                         } else { 
                             callback(
-                                new UnauthorizedException(
+                                new BadRequestException(
                                     correlationId,
                                     'WRONG_PASSWORD',
                                     'Invalid password'
@@ -308,7 +307,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                 // Password must be different then the previous one
                 if (userPassword.password != oldPassword) {
                     callback(
-                        new UnauthorizedException(
+                        new BadRequestException(
                             correlationId,
                             'WRONG_PASSWORD', 
                             'Invalid password'
@@ -385,7 +384,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                 // Todo: Remove magic code
                 if (userPassword.rec_code != code && code != this._magicCode) {
                     callback(
-                        new UnauthorizedException(
+                        new BadRequestException(
                             correlationId,
                             'WRONG_CODE',
                             'Invalid password recovery code ' + code
@@ -398,7 +397,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                 // Check if code already expired
                 if (!(userPassword.rec_expire_time > new Date())) {
                     callback(
-                        new UnauthorizedException(
+                        new BadRequestException(
                             correlationId,
                             'CODE_EXPIRED',
                             'Password recovery code ' + code + ' expired'

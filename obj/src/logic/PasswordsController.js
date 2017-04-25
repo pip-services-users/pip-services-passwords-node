@@ -9,7 +9,6 @@ const pip_services_commons_node_3 = require("pip-services-commons-node");
 const pip_services_commons_node_4 = require("pip-services-commons-node");
 const pip_services_commons_node_5 = require("pip-services-commons-node");
 const pip_services_commons_node_6 = require("pip-services-commons-node");
-const pip_services_commons_node_7 = require("pip-services-commons-node");
 const EmailConnector_1 = require("./EmailConnector");
 const ActivitiesConnector_1 = require("./ActivitiesConnector");
 const UserPasswordV1_1 = require("../data/version1/UserPasswordV1");
@@ -117,7 +116,7 @@ class PasswordsController {
                     if (passwordMatch && userPassword.locked && lastFailureTimeout > this._lockTimeout)
                         userPassword.locked = false; //unlock user
                     else if (userPassword.locked) {
-                        callback(new pip_services_commons_node_7.UnauthorizedException(correlationId, 'ACCOUNT_LOCKED', 'Account for user ' + userId + ' is locked')
+                        callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'ACCOUNT_LOCKED', 'Account for user ' + userId + ' is locked')
                             .withDetails('user_id', userId));
                         return;
                     }
@@ -127,12 +126,12 @@ class PasswordsController {
                         userPassword.fail_time = currentTime;
                         if (userPassword.fail_count >= this._attemptCount) {
                             userPassword.locked = true;
-                            callback(new pip_services_commons_node_7.UnauthorizedException(correlationId, 'ACCOUNT_LOCKED', 'Number of attempts exceeded. Account for user ' + userId + ' was locked')
+                            callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'ACCOUNT_LOCKED', 'Number of attempts exceeded. Account for user ' + userId + ' was locked')
                                 .withDetails('user_id', userId));
                             this._emailConnector.sendAccountLockedEmail(correlationId, userId);
                         }
                         else {
-                            callback(new pip_services_commons_node_7.UnauthorizedException(correlationId, 'WRONG_PASSWORD', 'Invalid password')
+                            callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'WRONG_PASSWORD', 'Invalid password')
                                 .withDetails('user_id', userId));
                         }
                         this._persistence.update(correlationId, userPassword, (err) => {
@@ -181,7 +180,7 @@ class PasswordsController {
             (callback) => {
                 // Password must be different then the previous one
                 if (userPassword.password != oldPassword) {
-                    callback(new pip_services_commons_node_7.UnauthorizedException(correlationId, 'WRONG_PASSWORD', 'Invalid password')
+                    callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'WRONG_PASSWORD', 'Invalid password')
                         .withDetails('user_id', userId));
                     return;
                 }
@@ -229,13 +228,13 @@ class PasswordsController {
             (callback) => {
                 // Todo: Remove magic code
                 if (userPassword.rec_code != code && code != this._magicCode) {
-                    callback(new pip_services_commons_node_7.UnauthorizedException(correlationId, 'WRONG_CODE', 'Invalid password recovery code ' + code)
+                    callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'WRONG_CODE', 'Invalid password recovery code ' + code)
                         .withDetails('user_id', userId));
                     return;
                 }
                 // Check if code already expired
                 if (!(userPassword.rec_expire_time > new Date())) {
-                    callback(new pip_services_commons_node_7.UnauthorizedException(correlationId, 'CODE_EXPIRED', 'Password recovery code ' + code + ' expired')
+                    callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'CODE_EXPIRED', 'Password recovery code ' + code + ' expired')
                         .withDetails('user_id', userId));
                     return;
                 }
