@@ -4,8 +4,8 @@ import { IReferences } from 'pip-services-commons-node';
 import { IReferenceable } from 'pip-services-commons-node';
 import { ICommandable } from 'pip-services-commons-node';
 import { CommandSet } from 'pip-services-commons-node';
-import { IPasswordsBusinessLogic } from './IPasswordsBusinessLogic';
-export declare class PasswordsController implements IConfigurable, IReferenceable, ICommandable, IPasswordsBusinessLogic {
+import { IPasswordsController } from './IPasswordsController';
+export declare class PasswordsController implements IConfigurable, IReferenceable, ICommandable, IPasswordsController {
     private static _defaultConfig;
     private _dependencyResolver;
     private _logger;

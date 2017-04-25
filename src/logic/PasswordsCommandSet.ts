@@ -7,12 +7,12 @@ import { Parameters } from 'pip-services-commons-node';
 import { FilterParams } from 'pip-services-commons-node';
 import { PagingParams } from 'pip-services-commons-node';
 
-import { IPasswordsBusinessLogic } from './IPasswordsBusinessLogic';
+import { IPasswordsController } from './IPasswordsController';
 
 export class PasswordsCommandSet extends CommandSet {
-    private _logic: IPasswordsBusinessLogic;
+    private _logic: IPasswordsController;
 
-    constructor(logic: IPasswordsBusinessLogic) {
+    constructor(logic: IPasswordsController) {
         super();
 
         this._logic = logic;

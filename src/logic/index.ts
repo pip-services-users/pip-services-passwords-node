@@ -1,2 +1,2 @@
-export { IPasswordsBusinessLogic } from './IPasswordsBusinessLogic';
+export { IPasswordsController } from './IPasswordsController';
 export { PasswordsController } from './PasswordsController';

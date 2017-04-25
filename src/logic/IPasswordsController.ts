@@ -1,4 +1,4 @@
-export interface IPasswordsBusinessLogic {
+export interface IPasswordsController {
 
     validatePassword(correlationId: string, password: string,
         callback: (err: any) => void): void;

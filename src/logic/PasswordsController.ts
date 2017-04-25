@@ -27,10 +27,10 @@ import { ActivitiesConnector } from './ActivitiesConnector';
 
 import { UserPasswordV1 } from '../data/version1/UserPasswordV1';
 import { IPasswordsPersistence } from '../persistence/IPasswordsPersistence';
-import { IPasswordsBusinessLogic } from './IPasswordsBusinessLogic';
+import { IPasswordsController } from './IPasswordsController';
 import { PasswordsCommandSet } from './PasswordsCommandSet';
 
-export class PasswordsController implements IConfigurable, IReferenceable, ICommandable, IPasswordsBusinessLogic {
+export class PasswordsController implements IConfigurable, IReferenceable, ICommandable, IPasswordsController {
     private static _defaultConfig: ConfigParams = ConfigParams.fromTuples(
         'dependencies.persistence', 'pip-services-passwords:persistence:*:*:1.0',
         'dependencies.activities', 'pip-services-activities:client:*:*:1.0',
