@@ -83,8 +83,8 @@ class PasswordsController {
         callback(null);
     }
     getPasswordInfo(correlationId, userId, callback) {
-        this.readUserPassword(correlationId, userId, (err, data) => {
-            if (data) {
+        this._persistence.getOneById(correlationId, userId, (err, data) => {
+            if (data != null) {
                 let info = {
                     id: data.id,
                     change_time: data.change_time,

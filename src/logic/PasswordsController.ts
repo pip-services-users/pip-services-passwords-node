@@ -157,11 +157,11 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
 
     public getPasswordInfo(correlationId: string, userId: string,
         callback: (err: any, info: UserPasswordInfoV1) => void): void {
-        this.readUserPassword(
+        this._persistence.getOneById(
             correlationId,
             userId, 
             (err, data) => {
-                if (data) {
+                if (data != null) {
                     let info = <UserPasswordInfoV1> {
                         id: data.id,
                         change_time: data.change_time,
