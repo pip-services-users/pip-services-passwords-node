@@ -9,6 +9,7 @@ exports.UserPasswordsMongoDbSchema = function (collection) {
         _id: { type: String, unique: true },
         password: { type: String, required: true },
         /* Password management */
+        change_time: { type: Date, required: false },
         locked: { type: Boolean, required: true, 'default': false },
         lock_time: { type: Date, required: false },
         fail_count: { type: Number, required: false },

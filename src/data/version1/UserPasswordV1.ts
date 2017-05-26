@@ -14,6 +14,7 @@ export class UserPasswordV1 implements IStringIdentifiable {
     public password: string;
 
     /* Password management */
+    public change_time: Date;
     public locked: boolean;
     public lock_time: Date;
     public fail_count: number;

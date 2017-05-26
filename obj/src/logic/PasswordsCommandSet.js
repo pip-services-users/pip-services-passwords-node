@@ -9,12 +9,24 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
         super();
         this._logic = logic;
         // Register commands to the database
+        this.addCommand(this.makeGetPasswordInfoCommand());
         this.addCommand(this.makeSetPasswordCommand());
+        this.addCommand(this.makeSetTempPasswordCommand());
         this.addCommand(this.makeDeletePasswordCommand());
         this.addCommand(this.makeAuthenticateCommand());
         this.addCommand(this.makeChangePasswordCommand());
+        this.addCommand(this.makeValidateCodeCommand());
         this.addCommand(this.makeResetPasswordCommand());
         this.addCommand(this.makeRecoverPasswordCommand());
+    }
+    makeGetPasswordInfoCommand() {
+        return new pip_services_commons_node_2.Command("get_password_info", new pip_services_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+            let userId = args.getAsNullableString("user_id");
+            this._logic.getPasswordInfo(correlationId, userId, (err, info) => {
+                callback(err, info);
+            });
+        });
     }
     makeSetPasswordCommand() {
         return new pip_services_commons_node_2.Command("set_password", new pip_services_commons_node_3.ObjectSchema(true)
@@ -24,6 +36,15 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
             let password = args.getAsNullableString("password");
             this._logic.setPassword(correlationId, userId, password, (err) => {
                 callback(err, null);
+            });
+        });
+    }
+    makeSetTempPasswordCommand() {
+        return new pip_services_commons_node_2.Command("set_temp_password", new pip_services_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+            let userId = args.getAsNullableString("user_id");
+            this._logic.setTempPassword(correlationId, userId, (err, password) => {
+                callback(err, password);
             });
         });
     }
@@ -57,6 +78,17 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
             let newPassword = args.getAsNullableString("new_password");
             this._logic.changePassword(correlationId, userId, oldPassword, newPassword, (err) => {
                 callback(err, null);
+            });
+        });
+    }
+    makeValidateCodeCommand() {
+        return new pip_services_commons_node_2.Command("validate_code", new pip_services_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String)
+            .withRequiredProperty('code', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+            let userId = args.getAsNullableString("user_id");
+            let code = args.getAsNullableString("code");
+            this._logic.validateCode(correlationId, userId, code, (err, valid) => {
+                callback(err, err == null ? { valid: valid } : null);
             });
         });
     }

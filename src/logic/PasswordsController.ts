@@ -25,6 +25,7 @@ import { IActivitiesClientV1 } from 'pip-clients-activities-node';
 import { ActivitiesConnector } from './ActivitiesConnector';
 
 import { UserPasswordV1 } from '../data/version1/UserPasswordV1';
+import { UserPasswordInfoV1 } from '../data/version1/UserPasswordInfoV1';
 import { IPasswordsPersistence } from '../persistence/IPasswordsPersistence';
 import { IPasswordsController } from './IPasswordsController';
 import { PasswordsCommandSet } from './PasswordsCommandSet';
@@ -154,6 +155,27 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         callback(null);
     } 
 
+    public getPasswordInfo(correlationId: string, userId: string,
+        callback: (err: any, info: UserPasswordInfoV1) => void): void {
+        this.readUserPassword(
+            correlationId,
+            userId, 
+            (err, data) => {
+                if (data) {
+                    let info = <UserPasswordInfoV1> {
+                        id: data.id,
+                        change_time: data.change_time,
+                        locked: data.locked,
+                        lock_time: data.lock_time
+                    };
+                    callback(err, info);
+                } else {
+                    callback(err, null);
+                }
+            }
+        );
+    }
+
     public setPassword(correlationId: string, userId: string, password: string,
         callback: (err: any) => void): void {
         password = this.hashPassword(password);
@@ -161,6 +183,21 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         let userPassword = new UserPasswordV1(userId, password);
         this._persistence.create(correlationId, userPassword, (err) => {
             callback(err); 
+        });
+    } 
+
+    public setTempPassword(correlationId: string, userId: string,
+        callback: (err: any, password: string) => void): void {
+            
+        // Todo: Improve password generation
+        let password = 'pass' + Math.floor(1000 * Math.random() * 9000);
+        let passwordHash = this.hashPassword(password);
+        
+        let userPassword = new UserPasswordV1(userId, passwordHash);
+        userPassword.change_time = new Date();
+
+        this._persistence.create(correlationId, userPassword, (err) => {
+            callback(err, err == null ? password : null); 
         });
     } 
 
@@ -334,6 +371,8 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                 userPassword.pwd_rec_code = null;
                 userPassword.pwd_rec_expire = null;
                 userPassword.lock = false;
+                // Todo: Add change password policy
+                userPassword.change_time = null;
 
                 callback();
             },
@@ -355,6 +394,24 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         ], (err) => {
             if (callback) callback(err);
         });
+    }
+
+    public validateCode(correlationId: string, userId: string, code: string,
+        callback: (err: any, valid: boolean) => void): void {
+
+        this.readUserPassword(
+            correlationId,
+            userId,  
+            (err, data) => {
+                if (err == null && data != null) {
+                    let valid = code == this._magicCode 
+                        || (data.rec_code == code && data.rec_expire_time > new Date());
+                    callback(null, valid);
+                } else {
+                    callback(err, false);
+                }
+            }
+        );
     }
 
     public resetPassword(correlationId: string, userId: string, code: string, password: string,
@@ -412,6 +469,8 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                 userPassword.rec_code = null;
                 userPassword.rec_expire_time = null;
                 userPassword.locked = false;
+                // Todo: Add change password policy
+                userPassword.change_time = null;
 
                 callback();
             },

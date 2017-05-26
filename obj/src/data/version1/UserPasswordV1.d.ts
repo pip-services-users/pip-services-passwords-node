@@ -3,6 +3,7 @@ export declare class UserPasswordV1 implements IStringIdentifiable {
     constructor(id: string, password?: string);
     id: string;
     password: string;
+    change_time: Date;
     locked: boolean;
     lock_time: Date;
     fail_count: number;

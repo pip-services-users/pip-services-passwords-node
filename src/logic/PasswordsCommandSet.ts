@@ -18,13 +18,30 @@ export class PasswordsCommandSet extends CommandSet {
         this._logic = logic;
 
         // Register commands to the database
+		this.addCommand(this.makeGetPasswordInfoCommand());
 		this.addCommand(this.makeSetPasswordCommand());
+		this.addCommand(this.makeSetTempPasswordCommand());
 		this.addCommand(this.makeDeletePasswordCommand());
 		this.addCommand(this.makeAuthenticateCommand());
 		this.addCommand(this.makeChangePasswordCommand());
+		this.addCommand(this.makeValidateCodeCommand());
 		this.addCommand(this.makeResetPasswordCommand());
 		this.addCommand(this.makeRecoverPasswordCommand());
     }
+
+	private makeGetPasswordInfoCommand(): ICommand {
+		return new Command(
+			"get_password_info",
+			new ObjectSchema(true)
+				.withRequiredProperty('user_id', TypeCode.String),
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+                let userId = args.getAsNullableString("user_id");
+                this._logic.getPasswordInfo(correlationId, userId, (err, info) => {
+					callback(err, info);
+				});
+            }
+		);
+	}
 
 	private makeSetPasswordCommand(): ICommand {
 		return new Command(
@@ -37,6 +54,20 @@ export class PasswordsCommandSet extends CommandSet {
                 let password = args.getAsNullableString("password");
                 this._logic.setPassword(correlationId, userId, password, (err) => {
 					callback(err, null);
+				});
+            }
+		);
+	}
+
+	private makeSetTempPasswordCommand(): ICommand {
+		return new Command(
+			"set_temp_password",
+			new ObjectSchema(true)
+				.withRequiredProperty('user_id', TypeCode.String),
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+                let userId = args.getAsNullableString("user_id");
+                this._logic.setTempPassword(correlationId, userId, (err, password) => {
+					callback(err, password);
 				});
             }
 		);
@@ -85,6 +116,22 @@ export class PasswordsCommandSet extends CommandSet {
                 let newPassword = args.getAsNullableString("new_password");
                 this._logic.changePassword(correlationId, userId, oldPassword, newPassword, (err) => {
 					callback(err, null);
+				});
+            }
+		);
+	}
+
+	private makeValidateCodeCommand(): ICommand {
+		return new Command(
+			"validate_code",
+			new ObjectSchema(true)
+				.withRequiredProperty('user_id', TypeCode.String)
+				.withRequiredProperty('code', TypeCode.String),
+            (correlationId: string, args: Parameters, callback: (err: any, result: any) => void) => {
+                let userId = args.getAsNullableString("user_id");
+                let code = args.getAsNullableString("code");
+                this._logic.validateCode(correlationId, userId, code, (err, valid) => {
+					callback(err, err == null ? { valid: valid } : null);
 				});
             }
 		);

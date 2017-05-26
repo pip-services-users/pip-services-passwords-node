@@ -39,6 +39,8 @@ suite('PasswordsController', ()=> {
     });
     
     test('Recover Password', (done) => {
+        let userPassword1: UserPasswordV1;
+
         async.series([
         // Create a new user
             (callback) => {
@@ -92,9 +94,24 @@ suite('PasswordsController', ()=> {
                         assert.isNotNull(userPassword.rec_code);
                         assert.isNotNull(userPassword.rec_expire_time);
 
+                        userPassword1 = userPassword;
+
                         callback();
                     }
-                )
+                ),
+                // Validate code
+                (callback) => {
+                    controller.validateCode(
+                        null, USER_PWD.id, userPassword1.rec_code,
+                        (err, valid) => {
+                            assert.isNull(err);
+
+                            assert.isTrue(valid);
+
+                            callback();
+                        }
+                    )
+                }
             }
         ], done);
     });
@@ -173,5 +190,41 @@ suite('PasswordsController', ()=> {
             }
         ], done);
     });
-    
+
+    test('Set Temp Password', (done) => {
+        let userPassword1: UserPasswordV1;
+
+        async.series([
+        // Create a new user
+            (callback) => {
+                controller.setTempPassword(
+                    null,
+                    USER_PWD.id, 
+                    (err, password) => {
+                        assert.isNull(err);
+                        
+                        assert.isNotNull(password);
+
+                        callback();
+                    }
+                );
+            },
+            // Verify
+            (callback) => {
+                controller.getPasswordInfo(
+                    null,
+                    USER_PWD.id,
+                    (err, info) => {
+                        assert.isNull(err);
+
+                        assert.equal(USER_PWD.id, info.id);
+                        assert.isNotNull(info.change_time);
+
+                        callback();
+                    }
+                )
+            }
+        ], done);
+    });
+
 });

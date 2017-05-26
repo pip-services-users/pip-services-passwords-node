@@ -82,11 +82,37 @@ class PasswordsController {
             return;
         callback(null);
     }
+    getPasswordInfo(correlationId, userId, callback) {
+        this.readUserPassword(correlationId, userId, (err, data) => {
+            if (data) {
+                let info = {
+                    id: data.id,
+                    change_time: data.change_time,
+                    locked: data.locked,
+                    lock_time: data.lock_time
+                };
+                callback(err, info);
+            }
+            else {
+                callback(err, null);
+            }
+        });
+    }
     setPassword(correlationId, userId, password, callback) {
         password = this.hashPassword(password);
         let userPassword = new UserPasswordV1_1.UserPasswordV1(userId, password);
         this._persistence.create(correlationId, userPassword, (err) => {
             callback(err);
+        });
+    }
+    setTempPassword(correlationId, userId, callback) {
+        // Todo: Improve password generation
+        let password = 'pass' + Math.floor(1000 * Math.random() * 9000);
+        let passwordHash = this.hashPassword(password);
+        let userPassword = new UserPasswordV1_1.UserPasswordV1(userId, passwordHash);
+        userPassword.change_time = new Date();
+        this._persistence.create(correlationId, userPassword, (err) => {
+            callback(err, err == null ? password : null);
         });
     }
     deletePassword(correlationId, userId, callback) {
@@ -194,6 +220,8 @@ class PasswordsController {
                 userPassword.pwd_rec_code = null;
                 userPassword.pwd_rec_expire = null;
                 userPassword.lock = false;
+                // Todo: Add change password policy
+                userPassword.change_time = null;
                 callback();
             },
             // Save the new password
@@ -209,6 +237,18 @@ class PasswordsController {
         ], (err) => {
             if (callback)
                 callback(err);
+        });
+    }
+    validateCode(correlationId, userId, code, callback) {
+        this.readUserPassword(correlationId, userId, (err, data) => {
+            if (err == null && data != null) {
+                let valid = code == this._magicCode
+                    || (data.rec_code == code && data.rec_expire_time > new Date());
+                callback(null, valid);
+            }
+            else {
+                callback(err, false);
+            }
         });
     }
     resetPassword(correlationId, userId, code, password, callback) {
@@ -243,6 +283,8 @@ class PasswordsController {
                 userPassword.rec_code = null;
                 userPassword.rec_expire_time = null;
                 userPassword.locked = false;
+                // Todo: Add change password policy
+                userPassword.change_time = null;
                 callback();
             },
             // Save the new password
