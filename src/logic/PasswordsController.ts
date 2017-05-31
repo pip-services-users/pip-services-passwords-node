@@ -452,7 +452,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                 }
 
                 // Check if code already expired
-                if (!(userPassword.rec_expire_time > new Date())) {
+                if (!(userPassword.rec_expire_time > new Date()) && code != this._magicCode) {
                     callback(
                         new BadRequestException(
                             correlationId,

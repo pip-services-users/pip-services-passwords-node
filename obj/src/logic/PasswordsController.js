@@ -273,7 +273,7 @@ class PasswordsController {
                     return;
                 }
                 // Check if code already expired
-                if (!(userPassword.rec_expire_time > new Date())) {
+                if (!(userPassword.rec_expire_time > new Date()) && code != this._magicCode) {
                     callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'CODE_EXPIRED', 'Password recovery code ' + code + ' expired')
                         .withDetails('user_id', userId));
                     return;
