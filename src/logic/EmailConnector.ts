@@ -4,8 +4,8 @@ import { ILogger } from 'pip-services-commons-node';
 import { ConfigParams } from 'pip-services-commons-node';
 
 import { IEmailClientV1 } from 'pip-clients-email-node';
-import { RecipientV1 } from 'pip-clients-email-node';
-import { MessageV1 } from 'pip-clients-email-node';
+import { EmailRecipientV1 } from 'pip-clients-email-node';
+import { EmailMessageV1 } from 'pip-clients-email-node';
 
 export class EmailConnector {
     private _accountLockedSubject: string;
@@ -49,10 +49,10 @@ export class EmailConnector {
         this._recoverPasswordHtml = this.loadTemplate('recover_password.html');
     }
 
-    private sendEmail(correlationId: string, userId: string, message: MessageV1, parameters: ConfigParams): void {
+    private sendEmail(correlationId: string, userId: string, message: EmailMessageV1, parameters: ConfigParams): void {
         if (this._emailClient == null) return;
 
-        let recipient = new RecipientV1(userId);
+        let recipient = new EmailRecipientV1(userId);
         this._emailClient.sendMessageToRecipient(
             correlationId, recipient, null, message, parameters,
             (err) => {
@@ -62,7 +62,7 @@ export class EmailConnector {
     }
 
     public sendAccountLockedEmail(correlationId: string, userId: string): void {
-        let message = new MessageV1(
+        let message = new EmailMessageV1(
             null, null, null, 
             this._accountLockedSubject, this._accountLockedText, this._accountLockedHtml
         );
@@ -70,7 +70,7 @@ export class EmailConnector {
     }
 
     public sendPasswordChangedEmail(correlationId: string, userId: string): void {
-        let message = new MessageV1(
+        let message = new EmailMessageV1(
             null, null, null, 
             this._passwordChangedSubject, this._passwordChangedText, this._passwordChangedHtml
         );
@@ -78,7 +78,7 @@ export class EmailConnector {
     }
 
     public sendRecoverPasswordEmail(correlationId: string, userId: string): void {
-        let message = new MessageV1(
+        let message = new EmailMessageV1(
             null, null, null, 
             this._recoverPasswordSubject, this._recoverPasswordText, this._recoverPasswordHtml
         );
