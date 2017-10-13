@@ -7,7 +7,7 @@ export let UserPasswordsMongoDbSchema = function(collection?: string) {
     let schema = new Schema(
         {
             /* Identification */
-            _id: { type: String, unique: true },
+            _id: { type: String },
             password: { type: String, required: true },
 
             /* Password management */

@@ -6,7 +6,7 @@ exports.UserPasswordsMongoDbSchema = function (collection) {
     collection = collection || 'passwords';
     let schema = new mongoose_1.Schema({
         /* Identification */
-        _id: { type: String, unique: true },
+        _id: { type: String },
         password: { type: String, required: true },
         /* Password management */
         change_time: { type: Date, required: false },

@@ -79,7 +79,7 @@ Before you execute tests you need to set configuration options in config.json fi
 As a starting point you can use example from config.example.json:
 
 ```bash
-copy config.example.yaml config.yaml
+copy config.example.yml config.yml
 ``` 
 
 After that check all configuration options. Specifically, pay attention to connection options
