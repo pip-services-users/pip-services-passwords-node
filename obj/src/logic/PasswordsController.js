@@ -9,13 +9,15 @@ const pip_services_commons_node_3 = require("pip-services-commons-node");
 const pip_services_commons_node_4 = require("pip-services-commons-node");
 const pip_services_commons_node_5 = require("pip-services-commons-node");
 const pip_services_commons_node_6 = require("pip-services-commons-node");
-const EmailConnector_1 = require("./EmailConnector");
+const pip_clients_msgdistribution_node_1 = require("pip-clients-msgdistribution-node");
+const MessageConnector_1 = require("./MessageConnector");
 const ActivitiesConnector_1 = require("./ActivitiesConnector");
 const UserPasswordV1_1 = require("../data/version1/UserPasswordV1");
 const PasswordsCommandSet_1 = require("./PasswordsCommandSet");
 class PasswordsController {
     constructor() {
         this._dependencyResolver = new pip_services_commons_node_2.DependencyResolver(PasswordsController._defaultConfig);
+        this._messageResolver = new pip_clients_msgdistribution_node_1.MessageResolverV1();
         this._logger = new pip_services_commons_node_4.CompositeLogger();
         this._lockTimeout = 1800000; // 30 mins
         this._attemptTimeout = 60000; // 1 min
@@ -27,6 +29,7 @@ class PasswordsController {
     configure(config) {
         config = config.setDefaults(PasswordsController._defaultConfig);
         this._dependencyResolver.configure(config);
+        this._messageResolver.configure(config);
         this._lockTimeout = config.getAsIntegerWithDefault('options.lock_timeout', this._lockTimeout);
         this._attemptTimeout = config.getAsIntegerWithDefault('options.attempt_timeout', this._attemptTimeout);
         this._attemptCount = config.getAsIntegerWithDefault('options.attempt_count', this._attemptCount);
@@ -39,9 +42,9 @@ class PasswordsController {
         this._dependencyResolver.setReferences(references);
         this._persistence = this._dependencyResolver.getOneRequired('persistence');
         this._activitiesClient = this._dependencyResolver.getOneOptional('activities');
-        this._emailClient = this._dependencyResolver.getOneOptional('email');
+        this._messageDistributionClient = this._dependencyResolver.getOneOptional('msgdistribution');
         this._activitiesConnector = new ActivitiesConnector_1.ActivitiesConnector(this._logger, this._activitiesClient);
-        this._emailConnector = new EmailConnector_1.EmailConnector(this._logger, this._emailClient);
+        this._messageConnector = new MessageConnector_1.MessageConnector(this._logger, this._messageResolver, this._messageDistributionClient);
     }
     getCommandSet() {
         if (this._commandSet == null)
@@ -154,7 +157,7 @@ class PasswordsController {
                             userPassword.locked = true;
                             callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'ACCOUNT_LOCKED', 'Number of attempts exceeded. Account for user ' + userId + ' was locked')
                                 .withDetails('user_id', userId));
-                            this._emailConnector.sendAccountLockedEmail(correlationId, userId);
+                            this._messageConnector.sendAccountLockedEmail(correlationId, userId);
                         }
                         else {
                             callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'WRONG_PASSWORD', 'Invalid password')
@@ -231,7 +234,7 @@ class PasswordsController {
             // Asynchronous post-processing
             (callback) => {
                 this._activitiesConnector.logPasswordChangedActivity(correlationId, userId);
-                this._emailConnector.sendPasswordChangedEmail(correlationId, userId);
+                this._messageConnector.sendPasswordChangedEmail(correlationId, userId);
                 callback();
             }
         ], (err) => {
@@ -294,7 +297,7 @@ class PasswordsController {
             // Asynchronous post-processing
             (callback) => {
                 this._activitiesConnector.logPasswordChangedActivity(correlationId, userId);
-                this._emailConnector.sendPasswordChangedEmail(correlationId, userId);
+                this._messageConnector.sendPasswordChangedEmail(correlationId, userId);
                 callback();
             }
         ], (err) => {
@@ -324,7 +327,7 @@ class PasswordsController {
             // Asynchronous post-processing
             (callback) => {
                 this._activitiesConnector.logPasswordRecoveredActivity(correlationId, userId);
-                this._emailConnector.sendRecoverPasswordEmail(correlationId, userId);
+                this._messageConnector.sendRecoverPasswordEmail(correlationId, userId, userPassword.rec_code);
                 callback();
             }
         ], (err) => {
@@ -333,7 +336,7 @@ class PasswordsController {
         });
     }
 }
-PasswordsController._defaultConfig = pip_services_commons_node_1.ConfigParams.fromTuples('dependencies.persistence', 'pip-services-passwords:persistence:*:*:1.0', 'dependencies.activities', 'pip-services-activities:client:*:*:1.0', 'dependencies.email', 'pip-services-email:client:*:*:1.0', 'options.lock_timeout', 1800000, // 30 mins
+PasswordsController._defaultConfig = pip_services_commons_node_1.ConfigParams.fromTuples('dependencies.persistence', 'pip-services-passwords:persistence:*:*:1.0', 'dependencies.activities', 'pip-services-activities:client:*:*:1.0', 'dependencies.msgdistribution', 'pip-services-msgdistribution:client:*:*:1.0', 'message_templates.account_locked.subject', '{{name}} account was locked', 'message_templates.account_locked.text', 'Your account was locked for 30 minutes after several failed signin attempts.', 'message_templates.password_changed.subject', '{{name}} password was changed', 'message_templates.password_changed.text', 'Your password was changed.', 'message_templates.recover_password.subject', 'Reset {{name}} password', 'message_templates.recover_password.text', 'Your password reset code is {{code}}', 'options.lock_timeout', 1800000, // 30 mins
 'options.attempt_timeout', 60000, // 1 min
 'options.attempt_count', 4, // 4 times
 'options.rec_expire_timeout', 24 * 3600000, // 24 hours

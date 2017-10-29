@@ -9,12 +9,13 @@ import { IPasswordsController } from './IPasswordsController';
 export declare class PasswordsController implements IConfigurable, IReferenceable, ICommandable, IPasswordsController {
     private static _defaultConfig;
     private _dependencyResolver;
+    private _messageResolver;
     private _logger;
     private _persistence;
     private _activitiesClient;
     private _activitiesConnector;
-    private _emailClient;
-    private _emailConnector;
+    private _messageDistributionClient;
+    private _messageConnector;
     private _commandSet;
     private _lockTimeout;
     private _attemptTimeout;

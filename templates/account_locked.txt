@@ -1,8 +1,0 @@
-Dear <%= name %>,
-
-Your account was locked for 30 minutes after several failed signin attempts.
-
-If you suspect unauthorized access to your account, please, contact us.
-
---
-<%= signature %>

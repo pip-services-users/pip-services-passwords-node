@@ -44,7 +44,7 @@
         "pip-services-net-node": "^2.0.0",
         "pip-services-aws-node": "^1.0.0",
         "pip-clients-activities-node": "git+ssh://git@github.com:pip-services-users/pip-clients-activities-node.git",
-        "pip-clients-email-node": "git+ssh://git@github.com:pip-services-users/pip-clients-email-node.git"
+        "pip-clients-msgdistribution-node": "git+ssh://git@github.com:pip-services-users/pip-clients-msgdistribution-node.git"
     },
     "devDependencies": {
         "@types/node": "*",

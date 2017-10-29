@@ -18,8 +18,9 @@ import { CompositeLogger } from 'pip-services-commons-node';
 import { BadRequestException } from 'pip-services-commons-node';
 import { NotFoundException } from 'pip-services-commons-node';
 
-import { IEmailClientV1 } from 'pip-clients-email-node';
-import { EmailConnector } from './EmailConnector';
+import { MessageResolverV1 } from 'pip-clients-msgdistribution-node';
+import { IMessageDistributionClientV1 } from 'pip-clients-msgdistribution-node';
+import { MessageConnector } from './MessageConnector';
 
 import { IActivitiesClientV1 } from 'pip-clients-activities-node';
 import { ActivitiesConnector } from './ActivitiesConnector';
@@ -34,8 +35,15 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
     private static _defaultConfig: ConfigParams = ConfigParams.fromTuples(
         'dependencies.persistence', 'pip-services-passwords:persistence:*:*:1.0',
         'dependencies.activities', 'pip-services-activities:client:*:*:1.0',
-        'dependencies.email', 'pip-services-email:client:*:*:1.0',
+        'dependencies.msgdistribution', 'pip-services-msgdistribution:client:*:*:1.0',
 
+        'message_templates.account_locked.subject', '{{name}} account was locked',
+        'message_templates.account_locked.text', 'Your account was locked for 30 minutes after several failed signin attempts.',
+        'message_templates.password_changed.subject', '{{name}} password was changed',
+        'message_templates.password_changed.text', 'Your password was changed.',
+        'message_templates.recover_password.subject', 'Reset {{name}} password',
+        'message_templates.recover_password.text', 'Your password reset code is {{code}}',
+        
         'options.lock_timeout', 1800000, // 30 mins
         'options.attempt_timeout', 60000, // 1 min
         'options.attempt_count', 4, // 4 times
@@ -45,12 +53,13 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
     );
 
     private _dependencyResolver: DependencyResolver = new DependencyResolver(PasswordsController._defaultConfig);
+    private _messageResolver: MessageResolverV1 = new MessageResolverV1();
     private _logger: CompositeLogger = new CompositeLogger();
     private _persistence: IPasswordsPersistence;
     private _activitiesClient: IActivitiesClientV1;
     private _activitiesConnector: ActivitiesConnector;
-    private _emailClient: IEmailClientV1;
-    private _emailConnector: EmailConnector;
+    private _messageDistributionClient: IMessageDistributionClientV1;
+    private _messageConnector: MessageConnector;
     private _commandSet: PasswordsCommandSet;
 
     private _lockTimeout: number = 1800000; // 30 mins
@@ -63,6 +72,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
     public configure(config: ConfigParams): void {
         config = config.setDefaults(PasswordsController._defaultConfig)
         this._dependencyResolver.configure(config);
+        this._messageResolver.configure(config);
 
         this._lockTimeout = config.getAsIntegerWithDefault('options.lock_timeout', this._lockTimeout);
         this._attemptTimeout = config.getAsIntegerWithDefault('options.attempt_timeout', this._attemptTimeout);
@@ -77,10 +87,10 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         this._dependencyResolver.setReferences(references);
         this._persistence = this._dependencyResolver.getOneRequired<IPasswordsPersistence>('persistence');
         this._activitiesClient = this._dependencyResolver.getOneOptional<IActivitiesClientV1>('activities');
-        this._emailClient = this._dependencyResolver.getOneOptional<IEmailClientV1>('email');
+        this._messageDistributionClient = this._dependencyResolver.getOneOptional<IMessageDistributionClientV1>('msgdistribution');
 
         this._activitiesConnector = new ActivitiesConnector(this._logger, this._activitiesClient);
-        this._emailConnector = new EmailConnector(this._logger, this._emailClient);
+        this._messageConnector = new MessageConnector(this._logger, this._messageResolver, this._messageDistributionClient);
     }
 
     public getCommandSet(): CommandSet {
@@ -266,7 +276,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                                 .withDetails('user_id', userId)
                             );
 
-                            this._emailConnector.sendAccountLockedEmail(correlationId, userId);
+                            this._messageConnector.sendAccountLockedEmail(correlationId, userId);
                         } else { 
                             callback(
                                 new BadRequestException(
@@ -387,7 +397,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         // Asynchronous post-processing
             (callback) => {
                 this._activitiesConnector.logPasswordChangedActivity(correlationId, userId);
-                this._emailConnector.sendPasswordChangedEmail(correlationId, userId);
+                this._messageConnector.sendPasswordChangedEmail(correlationId, userId);
 
                 callback();
             }
@@ -485,7 +495,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         // Asynchronous post-processing
             (callback) => {
                 this._activitiesConnector.logPasswordChangedActivity(correlationId, userId);
-                this._emailConnector.sendPasswordChangedEmail(correlationId, userId);
+                this._messageConnector.sendPasswordChangedEmail(correlationId, userId);
                 callback();
             }
         ], (err) => {
@@ -528,7 +538,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         // Asynchronous post-processing
             (callback) => {
                 this._activitiesConnector.logPasswordRecoveredActivity(correlationId, userId);
-                this._emailConnector.sendRecoverPasswordEmail(correlationId, userId);
+                this._messageConnector.sendRecoverPasswordEmail(correlationId, userId, userPassword.rec_code);
                 callback();
             }
         ], (err) => {
