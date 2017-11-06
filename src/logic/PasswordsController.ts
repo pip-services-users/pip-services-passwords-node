@@ -37,12 +37,12 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         'dependencies.activities', 'pip-services-activities:client:*:*:1.0',
         'dependencies.msgdistribution', 'pip-services-msgdistribution:client:*:*:1.0',
 
-        'message_templates.account_locked.subject', '{{name}} account was locked',
-        'message_templates.account_locked.text', 'Your account was locked for 30 minutes after several failed signin attempts.',
-        'message_templates.password_changed.subject', '{{name}} password was changed',
-        'message_templates.password_changed.text', 'Your password was changed.',
-        'message_templates.recover_password.subject', 'Reset {{name}} password',
-        'message_templates.recover_password.text', 'Your password reset code is {{code}}',
+        'message_templates.account_locked.subject', 'Account was locked',
+        'message_templates.account_locked.text', '{{name}} account was locked for 30 minutes after several failed signin attempts.',
+        'message_templates.password_changed.subject', 'Password was changed',
+        'message_templates.password_changed.text', '{{name}} password was changed.',
+        'message_templates.recover_password.subject', 'Reset password',
+        'message_templates.recover_password.text', '{{name}} password reset code is {{code}}',
         
         'options.lock_timeout', 1800000, // 30 mins
         'options.attempt_timeout', 60000, // 1 min
