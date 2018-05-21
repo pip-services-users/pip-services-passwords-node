@@ -1,0 +1,97 @@
+---
+# Container descriptor
+- descriptor: "pip-services:context-info:default:default:1.0"
+  name: "pip-services-passwords"
+  description: "Passwords microservice for pip-services"
+
+# Console logger
+- descriptor: "pip-services:logger:console:default:1.0"
+  level: "trace"
+
+{{#if ELASTICSEARCH_LOGGING_ENABLED}}
+# ElasticSearch logger
+- descriptor: "pip-services:logger:elasticsearch:default:1.0"
+  level: "info"
+  connection:
+    protocol: http
+    host: {{ELASTICSEARCH_LOGGING_SERVICE_HOST}}
+    port: {{ELASTICSEARCH_LOGGING_SERVICE_PORT}}
+{{/if}}
+
+# Performance counters that posts values to log
+- descriptor: "pip-services:counters:log:default:1.0"
+  level: "trace"
+
+# Prometheus performance counters
+{{#if PUSHGATEWAY_METRICS_ENABLED}}
+- descriptor: "pip-services:counters:prometheus:default:1.0"
+  level: "trace"
+  interval: "30000"  
+  connection:
+    protocol: http
+    host: {{PUSHGATEWAY_METRICS_SERVICE_HOST}}
+    port: {{PUSHGATEWAY_METRICS_SERVICE_PORT}}
+{{/if}}
+
+{{#if MEMORY_ENABLED}}
+# In-memory persistence. Use only for testing!
+- descriptor: "pip-services-passwords:persistence:memory:default:1.0"
+{{/if}}
+
+{{#if FILE_ENABLED}}
+# File persistence. Use it for testing of for simple standalone deployments
+- descriptor: "pip-services-passwords:persistence:file:default:1.0"
+  path: {{FILE_PATH}}{{#unless FILE_PATH}}"../data/passwords.json"{{/unless}}
+{{/if}}
+
+{{#if MONGO_ENABLED}}
+# MongoDB Persistence
+- descriptor: "pip-services-passwords:persistence:mongodb:default:1.0"
+  collection: {{MONGO_COLLECTION}}{{#unless MONGO_COLLECTION}}passwords{{/unless}}
+  connection:
+    uri: {{{MONGO_SERVICE_URI}}}
+    host: {{{MONGO_SERVICE_HOST}}}{{#unless MONGO_SERVICE_HOST}}localhost{{/unless}}
+    port: {{MONGO_SERVICE_PORT}}{{#unless MONGO_SERVICE_PORT}}27017{{/unless}}
+    database: {{MONGO_DB}}{{#unless MONGO_DB}}app{{/unless}}
+  credential:
+    username: {{MONGO_USER}}
+    password: {{MONGO_PASS}}
+{{/if}}
+
+{{#unless MEMORY_ENABLED}}{{#unless FILE_ENABLED}}{{#unless MONGO_ENABLED}}
+# Default in-memory persistence
+- descriptor: "pip-services-passwords:persistence:memory:default:1.0"
+{{/unless}}{{/unless}}{{/unless}}
+
+# Default controller
+- descriptor: "pip-services-passwords:controller:default:default:1.0"
+  options:
+      lock_timeout: {{PASSWORDS_LOCK_TIMEOUT}}{{#unless PASSWORDS_LOCK_TIMEOUT}}1800000{{/unless}} # 30 mins
+      attempt_timeout: {{PASSWORDS_ATTEMPT_TIMEOUT}}{{#unless PASSWORDS_ATTEMPT_TIMEOUT}}60000{{/unless}} # 1 min
+      attempt_count: {{PASSWORDS_ATTEMPT_COUNT}}{{#unless PASSWORDS_ATTEMPT_COUNT}}4{{/unless}} # 4 times
+      rec_expire_timeout: {{PASSWORDS_REC_EXPIRE_TIMEOUT}}{{#unless PASSWORDS_REC_EXPIRE_TIMEOUT}}7200000{{/unless}} # 2 hours
+      lock_enabled: {{PASSWORDS_LOCK_ENABLED}}{{#unless PASSWORDS_LOCK_ENABLED}}false{{/unless}} # set to TRUE to enable locking logic
+      magic_code: {{PASSWORDS_MAGIC_CODE}}{{#unless PASSWORDS_MAGIC_CODE}}null{{/unless}} # Universal code
+
+# Common HTTP endpoint
+- descriptor: "pip-services:endpoint:http:default:1.0"
+  connection:
+    protocol: "http"
+    host: "0.0.0.0"
+    port: 8080
+
+# HTTP endpoint version 1.0
+- descriptor: "pip-services-passwords:service:http:default:1.0"
+
+# Heartbeat service
+- descriptor: "pip-services:heartbeat-service:http:default:1.0"
+
+# Status service
+- descriptor: "pip-services:status-service:http:default:1.0"
+
+# Prometheus metrics service
+- descriptor: "pip-services:metrics-service:prometheus:default:1.0"
+  connection:
+    protocol: "http"
+    host: "0.0.0.0"
+    port: 8082

@@ -56,7 +56,7 @@ suite('PasswordsHttpServiceV1', ()=> {
         async.series([
         // Create password
             (callback) => {
-                rest.post('/passwords/set_password',
+                rest.post('/v1/passwords/set_password',
                     {
                         user_id: USER_PWD.id,
                         password: USER_PWD.password
@@ -70,7 +70,7 @@ suite('PasswordsHttpServiceV1', ()=> {
             },
         // Authenticate user
             (callback) => {
-                rest.post('/passwords/authenticate',
+                rest.post('/v1/passwords/authenticate',
                     {
                         user_id: USER_PWD.id,
                         password: USER_PWD.password
@@ -87,7 +87,7 @@ suite('PasswordsHttpServiceV1', ()=> {
             },
         // ChangePassword
             (callback) => {
-                rest.post('/passwords/change_password',
+                rest.post('/v1/passwords/change_password',
                     {
                         user_id: USER_PWD.id,
                         old_password: USER_PWD.password,
@@ -102,7 +102,7 @@ suite('PasswordsHttpServiceV1', ()=> {
             },
         // Delete password
             (callback) => {
-                rest.post('/passwords/delete_password',
+                rest.post('/v1/passwords/delete_password',
                     {
                         user_id: USER_PWD.id
                     },
@@ -115,7 +115,7 @@ suite('PasswordsHttpServiceV1', ()=> {
             },
         // Authenticate user again
             (callback) => {
-                rest.post('/passwords/authenticate',
+                rest.post('/v1/passwords/authenticate',
                     {
                         user_id: USER_PWD.id,
                         password: 'newpwd123'

@@ -26,7 +26,7 @@
     "engines": {
         "node": ">=0.6.14"
     },
-    "private": true,
+    "private": false,
     "scripts": {
         "build": "tsc",
         "watch": "tsc --watch",
@@ -43,6 +43,7 @@
         "pip-services-data-node": "^2.0.0",
         "pip-services-net-node": "^2.0.0",
         "pip-services-aws-node": "^1.0.0",
+        "pip-services-oss-node": "^1.0.0",
         "pip-clients-activities-node": "git+ssh://git@github.com:pip-services-users/pip-clients-activities-node.git",
         "pip-clients-msgdistribution-node": "git+ssh://git@github.com:pip-services-users/pip-clients-msgdistribution-node.git"
     },
