@@ -38,12 +38,14 @@
         "rebenchmark": "tsc && matcha -R clean -I tdd ./obj/benchmark/run.js"
     },
     "dependencies": {
-        "pip-services-commons-node": "^2.7.0",
-        "pip-services-container-node": "^2.0.0",
-        "pip-services-data-node": "^2.0.0",
-        "pip-services-net-node": "^2.0.0",
-        "pip-services-aws-node": "^1.0.0",
-        "pip-services-oss-node": "^1.0.0",
+        "pip-services-commons-node": "^3.0.0",
+        "pip-services-components-node": "^3.0.0",
+        "pip-services-container-node": "^3.0.0",
+        "pip-services-data-node": "^3.0.0",
+        "pip-services-aws-node": "^3.0.0",
+        "pip-services-rpc-node": "^3.0.0",
+        "pip-services-mongodb-node": "^3.0.0",
+        "pip-services-seneca-node": "^3.0.0",
         "pip-clients-activities-node": "git+ssh://git@github.com:pip-services-users/pip-clients-activities-node.git",
         "pip-clients-msgdistribution-node": "git+ssh://git@github.com:pip-services-users/pip-clients-msgdistribution-node.git"
     },

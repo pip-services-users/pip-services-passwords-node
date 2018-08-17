@@ -22,7 +22,8 @@ try {
     # Test using curl
     Start-Sleep -Seconds 10
     Invoke-WebRequest -Uri http://localhost:8080/heartbeat
-    #Invoke-WebRequest -Uri http://localhost:8080/dashboards/get_dashboards
+    #$postParams = @{ user_id="123", password="pwd123" }
+    #Invoke-WebRequest -Uri http://localhost:8080/v1/passwords/set_password -Method POST -Body $postParams
 
     Write-Host "The container was successfully built."
 } finally {

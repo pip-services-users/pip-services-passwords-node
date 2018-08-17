@@ -6,8 +6,8 @@ let assert = require('chai').assert;
 import { Descriptor } from 'pip-services-commons-node';
 import { ConfigParams } from 'pip-services-commons-node';
 import { References } from 'pip-services-commons-node';
-import { ConsoleLogger } from 'pip-services-commons-node';
-import { SenecaInstance } from 'pip-services-net-node';
+import { ConsoleLogger } from 'pip-services-components-node';
+import { SenecaInstance } from 'pip-services-seneca-node';
 
 import { MessageDistributionNullClientV1 } from 'pip-clients-msgdistribution-node';
 
@@ -29,7 +29,7 @@ suite('PasswordsController', ()=> {
         let logger = new ConsoleLogger();
 
         let references: References = References.fromTuples(
-            new Descriptor('pip-services-commons', 'logger', 'console', 'default', '1.0'), logger,
+            new Descriptor('pip-services', 'logger', 'console', 'default', '1.0'), logger,
             new Descriptor('pip-services-passwords', 'persistence', 'memory', 'default', '1.0'), persistence,
             new Descriptor('pip-services-passwords', 'controller', 'default', 'default', '1.0'), controller,
             new Descriptor('pip-services-msgdistribution', 'client', 'null', 'default', '1.0'), new MessageDistributionNullClientV1()

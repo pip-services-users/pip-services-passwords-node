@@ -1,4 +1,4 @@
-import { ILogger } from 'pip-services-commons-node';
+import { ILogger } from 'pip-services-components-node';
 import { IActivitiesClientV1 } from 'pip-clients-activities-node';
 export declare class ActivitiesConnector {
     private _logger;

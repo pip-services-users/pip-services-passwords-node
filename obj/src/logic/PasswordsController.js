@@ -6,9 +6,9 @@ let crypto = require('crypto');
 const pip_services_commons_node_1 = require("pip-services-commons-node");
 const pip_services_commons_node_2 = require("pip-services-commons-node");
 const pip_services_commons_node_3 = require("pip-services-commons-node");
+const pip_services_components_node_1 = require("pip-services-components-node");
 const pip_services_commons_node_4 = require("pip-services-commons-node");
 const pip_services_commons_node_5 = require("pip-services-commons-node");
-const pip_services_commons_node_6 = require("pip-services-commons-node");
 const pip_clients_msgdistribution_node_1 = require("pip-clients-msgdistribution-node");
 const MessageConnector_1 = require("./MessageConnector");
 const ActivitiesConnector_1 = require("./ActivitiesConnector");
@@ -18,7 +18,7 @@ class PasswordsController {
     constructor() {
         this._dependencyResolver = new pip_services_commons_node_2.DependencyResolver(PasswordsController._defaultConfig);
         this._messageResolver = new pip_clients_msgdistribution_node_1.MessageResolverV1();
-        this._logger = new pip_services_commons_node_4.CompositeLogger();
+        this._logger = new pip_services_components_node_1.CompositeLogger();
         this._lockTimeout = 1800000; // 30 mins
         this._attemptTimeout = 60000; // 1 min
         this._attemptCount = 4; // 4 times
@@ -63,11 +63,11 @@ class PasswordsController {
     }
     verifyPassword(correlationId, password, callback) {
         if (!password) {
-            callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'NO_PASSWORD', 'Missing user password'));
+            callback(new pip_services_commons_node_4.BadRequestException(correlationId, 'NO_PASSWORD', 'Missing user password'));
             return false;
         }
         if (password.length < 6 || password.length > 20) {
-            callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'BAD_PASSWORD', 'User password should be 5 to 20 symbols long'));
+            callback(new pip_services_commons_node_4.BadRequestException(correlationId, 'BAD_PASSWORD', 'User password should be 5 to 20 symbols long'));
             return false;
         }
         return true;
@@ -75,7 +75,7 @@ class PasswordsController {
     readUserPassword(correlationId, userId, callback) {
         this._persistence.getOneById(correlationId, userId, (err, item) => {
             if (item == null && err == null) {
-                err = new pip_services_commons_node_6.NotFoundException(correlationId, 'USER_NOT_FOUND', 'User ' + userId + ' was not found').withDetails('user_id', userId);
+                err = new pip_services_commons_node_5.NotFoundException(correlationId, 'USER_NOT_FOUND', 'User ' + userId + ' was not found').withDetails('user_id', userId);
             }
             callback(err, item);
         });
@@ -145,7 +145,7 @@ class PasswordsController {
                     if (passwordMatch && userPassword.locked && lastFailureTimeout > this._lockTimeout)
                         userPassword.locked = false; //unlock user
                     else if (userPassword.locked) {
-                        callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'ACCOUNT_LOCKED', 'Account for user ' + userId + ' is locked')
+                        callback(new pip_services_commons_node_4.BadRequestException(correlationId, 'ACCOUNT_LOCKED', 'Account for user ' + userId + ' is locked')
                             .withDetails('user_id', userId));
                         return;
                     }
@@ -155,12 +155,12 @@ class PasswordsController {
                         userPassword.fail_time = currentTime;
                         if (userPassword.fail_count >= this._attemptCount) {
                             userPassword.locked = true;
-                            callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'ACCOUNT_LOCKED', 'Number of attempts exceeded. Account for user ' + userId + ' was locked')
+                            callback(new pip_services_commons_node_4.BadRequestException(correlationId, 'ACCOUNT_LOCKED', 'Number of attempts exceeded. Account for user ' + userId + ' was locked')
                                 .withDetails('user_id', userId));
                             this._messageConnector.sendAccountLockedEmail(correlationId, userId);
                         }
                         else {
-                            callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'WRONG_PASSWORD', 'Invalid password')
+                            callback(new pip_services_commons_node_4.BadRequestException(correlationId, 'WRONG_PASSWORD', 'Invalid password')
                                 .withDetails('user_id', userId));
                         }
                         this._persistence.update(correlationId, userPassword, (err) => {
@@ -209,12 +209,12 @@ class PasswordsController {
             (callback) => {
                 // Password must be different then the previous one
                 if (userPassword.password != oldPassword) {
-                    callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'WRONG_PASSWORD', 'Invalid password')
+                    callback(new pip_services_commons_node_4.BadRequestException(correlationId, 'WRONG_PASSWORD', 'Invalid password')
                         .withDetails('user_id', userId));
                     return;
                 }
                 if (oldPassword === newPassword) {
-                    callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'PASSWORD_NOT_CHANGED', 'Old and new passwords are identical')
+                    callback(new pip_services_commons_node_4.BadRequestException(correlationId, 'PASSWORD_NOT_CHANGED', 'Old and new passwords are identical')
                         .withDetails('user_id', userId));
                     return;
                 }
@@ -271,13 +271,13 @@ class PasswordsController {
             (callback) => {
                 // Todo: Remove magic code
                 if (userPassword.rec_code != code && code != this._magicCode) {
-                    callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'WRONG_CODE', 'Invalid password recovery code ' + code)
+                    callback(new pip_services_commons_node_4.BadRequestException(correlationId, 'WRONG_CODE', 'Invalid password recovery code ' + code)
                         .withDetails('user_id', userId));
                     return;
                 }
                 // Check if code already expired
                 if (!(userPassword.rec_expire_time > new Date()) && code != this._magicCode) {
-                    callback(new pip_services_commons_node_5.BadRequestException(correlationId, 'CODE_EXPIRED', 'Password recovery code ' + code + ' expired')
+                    callback(new pip_services_commons_node_4.BadRequestException(correlationId, 'CODE_EXPIRED', 'Password recovery code ' + code + ' expired')
                         .withDetails('user_id', userId));
                     return;
                 }

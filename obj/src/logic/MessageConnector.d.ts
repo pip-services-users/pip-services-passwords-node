@@ -1,4 +1,4 @@
-import { ILogger } from 'pip-services-commons-node';
+import { ILogger } from 'pip-services-components-node';
 import { MessageResolverV1 } from 'pip-clients-msgdistribution-node';
 import { IMessageDistributionClientV1 } from 'pip-clients-msgdistribution-node';
 export declare class MessageConnector {

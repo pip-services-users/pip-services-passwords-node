@@ -1,4 +1,4 @@
-import { ILogger } from 'pip-services-commons-node';
+import { ILogger } from 'pip-services-components-node';
 import { ConfigParams } from 'pip-services-commons-node';
 
 import { MessageV1 } from 'pip-clients-msgdistribution-node';

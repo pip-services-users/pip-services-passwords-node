@@ -14,7 +14,7 @@ import { DataPage } from 'pip-services-commons-node';
 import { ICommandable } from 'pip-services-commons-node';
 import { CommandSet } from 'pip-services-commons-node';
 import { IdGenerator } from 'pip-services-commons-node';
-import { CompositeLogger } from 'pip-services-commons-node';
+import { CompositeLogger } from 'pip-services-components-node';
 import { BadRequestException } from 'pip-services-commons-node';
 import { NotFoundException } from 'pip-services-commons-node';
 
