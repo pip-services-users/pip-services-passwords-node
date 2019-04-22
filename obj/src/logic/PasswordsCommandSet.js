@@ -1,10 +1,10 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const pip_services_commons_node_1 = require("pip-services-commons-node");
-const pip_services_commons_node_2 = require("pip-services-commons-node");
-const pip_services_commons_node_3 = require("pip-services-commons-node");
-const pip_services_commons_node_4 = require("pip-services-commons-node");
-class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
+const pip_services3_commons_node_1 = require("pip-services3-commons-node");
+const pip_services3_commons_node_2 = require("pip-services3-commons-node");
+const pip_services3_commons_node_3 = require("pip-services3-commons-node");
+const pip_services3_commons_node_4 = require("pip-services3-commons-node");
+class PasswordsCommandSet extends pip_services3_commons_node_1.CommandSet {
     constructor(logic) {
         super();
         this._logic = logic;
@@ -20,8 +20,8 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
         this.addCommand(this.makeRecoverPasswordCommand());
     }
     makeGetPasswordInfoCommand() {
-        return new pip_services_commons_node_2.Command("get_password_info", new pip_services_commons_node_3.ObjectSchema(true)
-            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+        return new pip_services3_commons_node_2.Command("get_password_info", new pip_services3_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services3_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
             let userId = args.getAsNullableString("user_id");
             this._logic.getPasswordInfo(correlationId, userId, (err, info) => {
                 callback(err, info);
@@ -29,9 +29,9 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
         });
     }
     makeSetPasswordCommand() {
-        return new pip_services_commons_node_2.Command("set_password", new pip_services_commons_node_3.ObjectSchema(true)
-            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String)
-            .withRequiredProperty('password', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+        return new pip_services3_commons_node_2.Command("set_password", new pip_services3_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services3_commons_node_4.TypeCode.String)
+            .withRequiredProperty('password', pip_services3_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
             let userId = args.getAsNullableString("user_id");
             let password = args.getAsNullableString("password");
             this._logic.setPassword(correlationId, userId, password, (err) => {
@@ -40,8 +40,8 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
         });
     }
     makeSetTempPasswordCommand() {
-        return new pip_services_commons_node_2.Command("set_temp_password", new pip_services_commons_node_3.ObjectSchema(true)
-            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+        return new pip_services3_commons_node_2.Command("set_temp_password", new pip_services3_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services3_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
             let userId = args.getAsNullableString("user_id");
             this._logic.setTempPassword(correlationId, userId, (err, password) => {
                 callback(err, password);
@@ -49,8 +49,8 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
         });
     }
     makeDeletePasswordCommand() {
-        return new pip_services_commons_node_2.Command("delete_password", new pip_services_commons_node_3.ObjectSchema(true)
-            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+        return new pip_services3_commons_node_2.Command("delete_password", new pip_services3_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services3_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
             let userId = args.getAsNullableString("user_id");
             this._logic.deletePassword(correlationId, userId, (err) => {
                 callback(err, null);
@@ -58,9 +58,9 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
         });
     }
     makeAuthenticateCommand() {
-        return new pip_services_commons_node_2.Command("authenticate", new pip_services_commons_node_3.ObjectSchema(true)
-            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String)
-            .withRequiredProperty('password', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+        return new pip_services3_commons_node_2.Command("authenticate", new pip_services3_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services3_commons_node_4.TypeCode.String)
+            .withRequiredProperty('password', pip_services3_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
             let userId = args.getAsNullableString("user_id");
             let password = args.getAsNullableString("password");
             this._logic.authenticate(correlationId, userId, password, (err, authenticated) => {
@@ -69,10 +69,10 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
         });
     }
     makeChangePasswordCommand() {
-        return new pip_services_commons_node_2.Command("change_password", new pip_services_commons_node_3.ObjectSchema(true)
-            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String)
-            .withRequiredProperty('old_password', pip_services_commons_node_4.TypeCode.String)
-            .withRequiredProperty('new_password', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+        return new pip_services3_commons_node_2.Command("change_password", new pip_services3_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services3_commons_node_4.TypeCode.String)
+            .withRequiredProperty('old_password', pip_services3_commons_node_4.TypeCode.String)
+            .withRequiredProperty('new_password', pip_services3_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
             let userId = args.getAsNullableString("user_id");
             let oldPassword = args.getAsNullableString("old_password");
             let newPassword = args.getAsNullableString("new_password");
@@ -82,9 +82,9 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
         });
     }
     makeValidateCodeCommand() {
-        return new pip_services_commons_node_2.Command("validate_code", new pip_services_commons_node_3.ObjectSchema(true)
-            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String)
-            .withRequiredProperty('code', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+        return new pip_services3_commons_node_2.Command("validate_code", new pip_services3_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services3_commons_node_4.TypeCode.String)
+            .withRequiredProperty('code', pip_services3_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
             let userId = args.getAsNullableString("user_id");
             let code = args.getAsNullableString("code");
             this._logic.validateCode(correlationId, userId, code, (err, valid) => {
@@ -93,10 +93,10 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
         });
     }
     makeResetPasswordCommand() {
-        return new pip_services_commons_node_2.Command("reset_password", new pip_services_commons_node_3.ObjectSchema(true)
-            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String)
-            .withRequiredProperty('code', pip_services_commons_node_4.TypeCode.String)
-            .withRequiredProperty('password', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+        return new pip_services3_commons_node_2.Command("reset_password", new pip_services3_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services3_commons_node_4.TypeCode.String)
+            .withRequiredProperty('code', pip_services3_commons_node_4.TypeCode.String)
+            .withRequiredProperty('password', pip_services3_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
             let userId = args.getAsNullableString("user_id");
             let code = args.getAsNullableString("code");
             let password = args.getAsNullableString("password");
@@ -106,8 +106,8 @@ class PasswordsCommandSet extends pip_services_commons_node_1.CommandSet {
         });
     }
     makeRecoverPasswordCommand() {
-        return new pip_services_commons_node_2.Command("recover_password", new pip_services_commons_node_3.ObjectSchema(true)
-            .withRequiredProperty('user_id', pip_services_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
+        return new pip_services3_commons_node_2.Command("recover_password", new pip_services3_commons_node_3.ObjectSchema(true)
+            .withRequiredProperty('user_id', pip_services3_commons_node_4.TypeCode.String), (correlationId, args, callback) => {
             let userId = args.getAsNullableString("user_id");
             this._logic.recoverPassword(correlationId, userId, (err) => {
                 callback(err, null);

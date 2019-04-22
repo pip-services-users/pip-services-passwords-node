@@ -1,5 +1,5 @@
-import { ILogger } from 'pip-services-components-node';
-import { ConfigParams } from 'pip-services-commons-node';
+import { ILogger } from 'pip-services3-components-node';
+import { ConfigParams } from 'pip-services3-commons-node';
 
 import { MessageV1 } from 'pip-clients-msgdistribution-node';
 import { DeliveryMethodV1 } from 'pip-clients-msgdistribution-node';

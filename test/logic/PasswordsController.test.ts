@@ -3,10 +3,10 @@ let async = require('async');
 let restify = require('restify');
 let assert = require('chai').assert;
 
-import { Descriptor } from 'pip-services-commons-node';
-import { ConfigParams } from 'pip-services-commons-node';
-import { References } from 'pip-services-commons-node';
-import { ConsoleLogger } from 'pip-services-components-node';
+import { Descriptor } from 'pip-services3-commons-node';
+import { ConfigParams } from 'pip-services3-commons-node';
+import { References } from 'pip-services3-commons-node';
+import { ConsoleLogger } from 'pip-services3-components-node';
 import { SenecaInstance } from 'pip-services-seneca-node';
 
 import { MessageDistributionNullClientV1 } from 'pip-clients-msgdistribution-node';

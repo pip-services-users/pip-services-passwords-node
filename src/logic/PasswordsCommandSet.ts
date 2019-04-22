@@ -1,11 +1,11 @@
-import { CommandSet } from 'pip-services-commons-node';
-import { ICommand } from 'pip-services-commons-node';
-import { Command } from 'pip-services-commons-node';
-import { ObjectSchema } from 'pip-services-commons-node';
-import { TypeCode } from 'pip-services-commons-node';
-import { Parameters } from 'pip-services-commons-node';
-import { FilterParams } from 'pip-services-commons-node';
-import { PagingParams } from 'pip-services-commons-node';
+import { CommandSet } from 'pip-services3-commons-node';
+import { ICommand } from 'pip-services3-commons-node';
+import { Command } from 'pip-services3-commons-node';
+import { ObjectSchema } from 'pip-services3-commons-node';
+import { TypeCode } from 'pip-services3-commons-node';
+import { Parameters } from 'pip-services3-commons-node';
+import { FilterParams } from 'pip-services3-commons-node';
+import { PagingParams } from 'pip-services3-commons-node';
 
 import { IPasswordsController } from './IPasswordsController';
 

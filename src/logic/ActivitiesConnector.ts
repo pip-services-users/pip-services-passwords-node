@@ -1,4 +1,4 @@
-import { ILogger } from 'pip-services-components-node';
+import { ILogger } from 'pip-services3-components-node';
 
 import { IActivitiesClientV1 } from 'pip-clients-activities-node';
 import { PartyActivityV1 } from 'pip-clients-activities-node';

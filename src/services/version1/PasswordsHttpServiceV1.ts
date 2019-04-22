@@ -1,5 +1,5 @@
-import { Descriptor } from 'pip-services-commons-node';
-import { CommandableHttpService } from 'pip-services-rpc-node';
+import { Descriptor } from 'pip-services3-commons-node';
+import { CommandableHttpService } from 'pip-services3-rpc-node';
 
 export class PasswordsHttpServiceV1 extends CommandableHttpService {
     public constructor() {

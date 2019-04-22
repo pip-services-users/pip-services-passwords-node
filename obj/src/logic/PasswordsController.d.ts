@@ -1,9 +1,9 @@
-import { ConfigParams } from 'pip-services-commons-node';
-import { IConfigurable } from 'pip-services-commons-node';
-import { IReferences } from 'pip-services-commons-node';
-import { IReferenceable } from 'pip-services-commons-node';
-import { ICommandable } from 'pip-services-commons-node';
-import { CommandSet } from 'pip-services-commons-node';
+import { ConfigParams } from 'pip-services3-commons-node';
+import { IConfigurable } from 'pip-services3-commons-node';
+import { IReferences } from 'pip-services3-commons-node';
+import { IReferenceable } from 'pip-services3-commons-node';
+import { ICommandable } from 'pip-services3-commons-node';
+import { CommandSet } from 'pip-services3-commons-node';
 import { UserPasswordInfoV1 } from '../data/version1/UserPasswordInfoV1';
 import { IPasswordsController } from './IPasswordsController';
 export declare class PasswordsController implements IConfigurable, IReferenceable, ICommandable, IPasswordsController {
@@ -26,10 +26,10 @@ export declare class PasswordsController implements IConfigurable, IReferenceabl
     configure(config: ConfigParams): void;
     setReferences(references: IReferences): void;
     getCommandSet(): CommandSet;
-    private generateVerificationCode();
-    private hashPassword(password);
-    private verifyPassword(correlationId, password, callback);
-    private readUserPassword(correlationId, userId, callback);
+    private generateVerificationCode;
+    private hashPassword;
+    private verifyPassword;
+    private readUserPassword;
     validatePassword(correlationId: string, password: string, callback: (err: any) => void): void;
     getPasswordInfo(correlationId: string, userId: string, callback: (err: any, info: UserPasswordInfoV1) => void): void;
     setPassword(correlationId: string, userId: string, password: string, callback: (err: any) => void): void;

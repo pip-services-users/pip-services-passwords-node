@@ -1,4 +1,4 @@
-import { IStringIdentifiable } from 'pip-services-commons-node';
+import { IStringIdentifiable } from 'pip-services3-commons-node';
 export declare class UserPasswordInfoV1 implements IStringIdentifiable {
     id: string;
     change_time: Date;

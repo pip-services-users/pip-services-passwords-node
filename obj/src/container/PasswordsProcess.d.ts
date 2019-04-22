@@ -1,4 +1,4 @@
-import { ProcessContainer } from 'pip-services-container-node';
+import { ProcessContainer } from 'pip-services3-container-node';
 export declare class PasswordsProcess extends ProcessContainer {
     constructor();
 }

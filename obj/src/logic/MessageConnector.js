@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const pip_services_commons_node_1 = require("pip-services-commons-node");
+const pip_services3_commons_node_1 = require("pip-services3-commons-node");
 const pip_clients_msgdistribution_node_1 = require("pip-clients-msgdistribution-node");
 class MessageConnector {
     constructor(_logger, _messageResolver, _messageDistributionClient) {
@@ -30,7 +30,7 @@ class MessageConnector {
     }
     sendRecoverPasswordEmail(correlationId, userId, code) {
         let message = this._messageResolver.resolve("recover_password");
-        let parameters = pip_services_commons_node_1.ConfigParams.fromTuples("code", code);
+        let parameters = pip_services3_commons_node_1.ConfigParams.fromTuples("code", code);
         this.sendMessage(correlationId, userId, message, parameters);
     }
 }
