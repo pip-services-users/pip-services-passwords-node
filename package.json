@@ -44,7 +44,7 @@
         "pip-services3-data-node": "^3.0.0",
         "pip-services3-aws-node": "^3.0.0",
         "pip-services3-rpc-node": "^3.0.0",
-        "pip-services3-mongodb-node": "^3.0.0",
+        "pip-services3-mongoose-node": "^3.0.0",
         "pip-clients-activities-node": "git+ssh://git@github.com:pip-services-users/pip-clients-activities-node.git",
         "pip-clients-msgdistribution-node": "git+ssh://git@github.com:pip-services-users/pip-clients-msgdistribution-node.git"
     },

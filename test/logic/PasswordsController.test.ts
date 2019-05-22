@@ -7,7 +7,6 @@ import { Descriptor } from 'pip-services3-commons-node';
 import { ConfigParams } from 'pip-services3-commons-node';
 import { References } from 'pip-services3-commons-node';
 import { ConsoleLogger } from 'pip-services3-components-node';
-import { SenecaInstance } from 'pip-services-seneca-node';
 
 import { MessageDistributionNullClientV1 } from 'pip-clients-msgdistribution-node';
 
