@@ -29,6 +29,9 @@ install:
   - ./publish.ps1
   - ./release.ps1
 
+script:
+  - echo "Skip Travis npm test"
+  
 after_script:
   - ./clean.ps1
   
