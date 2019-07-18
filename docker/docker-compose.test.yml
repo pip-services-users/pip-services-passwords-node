@@ -10,10 +10,18 @@ services:
     command: ${TEST_CMD:-npm test}
     links:
       - mongo
+      - couchbase
     environment:
       - MONGO_SERVICE_HOST=mongo
       - MONGO_SERVICE_PORT=27017
       - MONGO_DB=test
+      - COUCHBASE_SERVICE_HOST=couchbase
+      - COUCHBASE_SERVICE_PORT=8091
+      - COUCHBASE_USER=Administrator
+      - COUCHBASE_PASS=password
 
   mongo:
     image: mongo:latest
+
+  couchbase:
+    image: couchbase/server-sandbox:5.5.1

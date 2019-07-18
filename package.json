@@ -30,6 +30,7 @@
     "scripts": {
         "build": "tsc",
         "watch": "tsc --watch",
+        "protogen": "cd src/protos && protoc --plugin=protoc-gen-ts=../../node_modules/.bin/protoc-gen-ts --js_out=import_style=commonjs,binary:./ --ts_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` passwords_v1.proto",
         "launch": "node run",
         "relaunch": "tsc && node run",
         "test": "mocha -t 10000 -R spec -u tdd --recursive ./obj/test",
@@ -41,14 +42,18 @@
         "pip-services3-commons-node": "^3.0.0",
         "pip-services3-components-node": "^3.0.0",
         "pip-services3-container-node": "^3.0.0",
+        "pip-services3-couchbase-node": "^3.0.0",
         "pip-services3-data-node": "^3.0.0",
         "pip-services3-aws-node": "^3.0.0",
         "pip-services3-rpc-node": "^3.0.0",
+        "pip-services3-grpc-node": "^3.0.0",
         "pip-services3-mongoose-node": "^3.0.0",
         "pip-clients-activities-node": "git+ssh://git@github.com:pip-services-users/pip-clients-activities-node.git",
         "pip-clients-msgdistribution-node": "git+ssh://git@github.com:pip-services-users/pip-clients-msgdistribution-node.git"
     },
     "devDependencies": {
+        "google-protobuf": "^3.7.1",
+        "ts-protoc-gen": "^0.9.0",
         "@types/node": "*",
         "@types/lodash": "^4.0.0",
         "@types/async": "^2.0.0",
@@ -58,7 +63,6 @@
         "@types/mongoose": "^4.7.4",
         "restify": "^4.3.0",
         "chai": "*",
-        "matcha": "*",
         "mocha": "*"
     }
 }

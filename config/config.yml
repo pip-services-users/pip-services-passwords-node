@@ -37,21 +37,27 @@
     password: {{MONGO_PASS}}
 {{/if}}
 
-{{#unless MEMORY_ENABLED}}{{#unless FILE_ENABLED}}{{#unless MONGO_ENABLED}}
+{{#if COUCHBASE_ENABLED}}
+# Couchbase Persistence
+- descriptor: "pip-services-passwords:persistence:couchbase:default:1.0"
+  connection:
+    uri: {{{COUCHBASE_SERVICE_URI}}}
+    host: {{{COUCHBASE_SERVICE_HOST}}}{{#unless COUCHBASE_SERVICE_HOST}}localhost{{/unless}}
+    port: {{COUCHBASE_SERVICE_PORT}}{{#unless COUCHBASE_SERVICE_PORT}}8091{{/unless}}
+  credential:
+    username: {{COUCHBASE_USER}}
+    password: {{COUCHBASE_PASS}}
+{{/if}}
+
+{{#unless MEMORY_ENABLED}}{{#unless FILE_ENABLED}}{{#unless MONGO_ENABLED}}{{#unless COUCHBASE_ENABLED}}
 # Default in-memory persistence
 - descriptor: "pip-services-passwords:persistence:memory:default:1.0"
-{{/unless}}{{/unless}}{{/unless}}
+{{/unless}}{{/unless}}{{/unless}}{{/unless}}
 
 # Default controller
 - descriptor: "pip-services-passwords:controller:default:default:1.0"
-  options:
-      lock_timeout: {{PASSWORDS_LOCK_TIMEOUT}}{{#unless PASSWORDS_LOCK_TIMEOUT}}1800000{{/unless}} # 30 mins
-      attempt_timeout: {{PASSWORDS_ATTEMPT_TIMEOUT}}{{#unless PASSWORDS_ATTEMPT_TIMEOUT}}60000{{/unless}} # 1 min
-      attempt_count: {{PASSWORDS_ATTEMPT_COUNT}}{{#unless PASSWORDS_ATTEMPT_COUNT}}4{{/unless}} # 4 times
-      rec_expire_timeout: {{PASSWORDS_REC_EXPIRE_TIMEOUT}}{{#unless PASSWORDS_REC_EXPIRE_TIMEOUT}}7200000{{/unless}} # 2 hours
-      lock_enabled: {{PASSWORDS_LOCK_ENABLED}}{{#unless PASSWORDS_LOCK_ENABLED}}false{{/unless}} # set to TRUE to enable locking logic
-      magic_code: {{PASSWORDS_MAGIC_CODE}}{{#unless PASSWORDS_MAGIC_CODE}}null{{/unless}} # Universal code
 
+{{#if HTTP_ENABLED}}
 # Common HTTP endpoint
 - descriptor: "pip-services:endpoint:http:default:1.0"
   connection:
@@ -67,3 +73,19 @@
 
 # Status service
 - descriptor: "pip-services:status-service:http:default:1.0"
+{{/if}}
+
+{{#if GRPC_ENABLED}}
+# Common GRPC endpoint
+- descriptor: "pip-services:endpoint:grpc:default:1.0"
+  connection:
+    protocol: "http"
+    host: "0.0.0.0"
+    port: 8090
+
+# GRPC endpoint version 1.0
+- descriptor: "pip-services-passwords:service:grpc:default:1.0"
+
+# Commandable GRPC endpoint version 1.0
+- descriptor: "pip-services-passwords:service:commandable-grpc:default:1.0"
+{{/if}}

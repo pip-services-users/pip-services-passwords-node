@@ -9,13 +9,25 @@ services:
     image: ${IMAGE:-pipdevs/app}
     links:
       - mongo
+      - couchbase
     environment:
       - MONGO_SERVICE_URI=
       - MONGO_SERVICE_HOST=mongo
       - MONGO_SERVICE_PORT=27017
       - MONGO_DB=app
+      - COUCHBASE_SERVICE_URI=
+      - COUCHBASE_SERVICE_HOST=couchbase
+      - COUCHBASE_SERVICE_PORT=8091
+      - COUCHBASE_USER=Administrator
+      - COUCHBASE_PASS=password
+      - HTTP_ENABLED=true
+      - GRPC_ENABLED=true
     ports:
       - "8080:8080"
+      - "8090:8090"
 
   mongo:
     image: mongo:latest
+
+  couchbase:
+    image: couchbase/server-sandbox:5.5.1
