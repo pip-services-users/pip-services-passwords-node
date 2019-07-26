@@ -40,6 +40,7 @@
 {{#if COUCHBASE_ENABLED}}
 # Couchbase Persistence
 - descriptor: "pip-services-passwords:persistence:couchbase:default:1.0"
+  bucket: {{COUCHBASE_BUCKET}}{{#unless COUCHBASE_BUCKET}}users{{/unless}}
   connection:
     uri: {{{COUCHBASE_SERVICE_URI}}}
     host: {{{COUCHBASE_SERVICE_HOST}}}{{#unless COUCHBASE_SERVICE_HOST}}localhost{{/unless}}

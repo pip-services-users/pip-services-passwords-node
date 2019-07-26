@@ -15,10 +15,12 @@ suite('PasswordsCouchbasePersistence', ()=> {
         let couchbasePort = process.env['COUCHBASE_SERVICE_PORT'] || 8091;
         let couchbaseUser = process.env['COUCHBASE_USER'] || 'Administrator';
         let couchbasePass = process.env['COUCHBASE_PASS'] || 'password';
+        let couchbaseBucket = process.env['COUCHBASE_BUCKET'] || 'test';
         if (couchbaseUri == null && couchbaseHost == null)
             return;
     
         var dbConfig = ConfigParams.fromTuples(
+            'bucket', couchbaseBucket,
             'options.auto_create', true,
             'connection.uri', couchbaseUri,
             'connection.host', couchbaseHost,

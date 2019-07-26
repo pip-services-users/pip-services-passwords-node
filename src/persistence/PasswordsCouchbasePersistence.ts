@@ -15,7 +15,7 @@ export class PasswordsCouchbasePersistence
     implements IPasswordsPersistence {
 
     constructor() {
-        super('passwords');
+        super('users', 'passwords');
     }
 
 }
