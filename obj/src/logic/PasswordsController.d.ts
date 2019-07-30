@@ -26,10 +26,10 @@ export declare class PasswordsController implements IConfigurable, IReferenceabl
     configure(config: ConfigParams): void;
     setReferences(references: IReferences): void;
     getCommandSet(): CommandSet;
-    private generateVerificationCode;
-    private hashPassword;
-    private verifyPassword;
-    private readUserPassword;
+    private generateVerificationCode();
+    private hashPassword(password);
+    private verifyPassword(correlationId, password, callback);
+    private readUserPassword(correlationId, userId, callback);
     validatePassword(correlationId: string, password: string, callback: (err: any) => void): void;
     getPasswordInfo(correlationId: string, userId: string, callback: (err: any, info: UserPasswordInfoV1) => void): void;
     setPassword(correlationId: string, userId: string, password: string, callback: (err: any) => void): void;

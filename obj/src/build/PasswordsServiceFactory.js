@@ -9,6 +9,7 @@ const PasswordsMemoryPersistence_1 = require("../persistence/PasswordsMemoryPers
 const PasswordsController_1 = require("../logic/PasswordsController");
 const PasswordsHttpServiceV1_1 = require("../services/version1/PasswordsHttpServiceV1");
 const PasswordsCommandableGrpcServiceV1_1 = require("../services/version1/PasswordsCommandableGrpcServiceV1");
+const PasswordsGrpcServiceV1_1 = require("../services/version1/PasswordsGrpcServiceV1");
 class PasswordsServiceFactory extends pip_services3_components_node_1.Factory {
     constructor() {
         super();
@@ -19,6 +20,7 @@ class PasswordsServiceFactory extends pip_services3_components_node_1.Factory {
         this.registerAsType(PasswordsServiceFactory.ControllerDescriptor, PasswordsController_1.PasswordsController);
         this.registerAsType(PasswordsServiceFactory.HttpServiceDescriptor, PasswordsHttpServiceV1_1.PasswordsHttpServiceV1);
         this.registerAsType(PasswordsServiceFactory.CommandableGrpcServiceDescriptor, PasswordsCommandableGrpcServiceV1_1.PasswordsCommandableGrpcServiceV1);
+        this.registerAsType(PasswordsServiceFactory.GrpcServiceDescriptor, PasswordsGrpcServiceV1_1.PasswordsGrpcServiceV1);
     }
 }
 PasswordsServiceFactory.Descriptor = new pip_services3_commons_node_1.Descriptor("pip-services-passwords", "factory", "default", "default", "1.0");

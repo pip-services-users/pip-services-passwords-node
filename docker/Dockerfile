@@ -1,5 +1,14 @@
 FROM pipdevs/node:8.4.0
 
+# Install python
+RUN apk add --update \
+    python \
+    python-dev \
+    py-pip \
+    build-base \
+  && pip install virtualenv \
+  && rm -rf /var/cache/apk/*
+  
 # Install git and ssh
 RUN apk update && apk add git && apk add openssh
 

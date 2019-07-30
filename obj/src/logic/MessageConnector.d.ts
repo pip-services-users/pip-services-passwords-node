@@ -6,7 +6,7 @@ export declare class MessageConnector {
     private _messageResolver;
     private _messageDistributionClient;
     constructor(_logger: ILogger, _messageResolver: MessageResolverV1, _messageDistributionClient: IMessageDistributionClientV1);
-    private sendMessage;
+    private sendMessage(correlationId, userId, message, parameters);
     sendAccountLockedEmail(correlationId: string, userId: string): void;
     sendPasswordChangedEmail(correlationId: string, userId: string): void;
     sendRecoverPasswordEmail(correlationId: string, userId: string, code: string): void;
