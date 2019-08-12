@@ -33,8 +33,8 @@
         "protogen": "cd src/protos && protoc --plugin=protoc-gen-ts=../../node_modules/.bin/protoc-gen-ts --js_out=import_style=commonjs,binary:./ --ts_out=. --grpc_out=. --plugin=protoc-gen-grpc=`which grpc_tools_node_protoc_plugin` passwords_v1.proto",
         "launch": "node run",
         "relaunch": "tsc && node run",
-        "test": "mocha -t 10000 -R spec -u tdd --recursive ./obj/test",
-        "retest": "tsc && mocha -t 10000 -R spec -u tdd --recursive ./obj/test",
+        "test": "mocha -t 20000 -R spec -u tdd --recursive ./obj/test",
+        "retest": "tsc && mocha -t 20000 -R spec -u tdd --recursive ./obj/test",
         "benchmark": "matcha -R clean -I tdd ./obj/benchmark/run.js",
         "rebenchmark": "tsc && matcha -R clean -I tdd ./obj/benchmark/run.js"
     },

@@ -35,9 +35,13 @@ export class PasswordsPersistenceFixture {
             },
         // Update the user password
             (callback) => {
+                let userPassword = new UserPasswordV1(USER_PWD.id, 'newpwd123');
+                userPassword.rec_code = "123";
+                userPassword.rec_expire_time = new Date();
+
                 this._persistence.update(
                     null,
-                    new UserPasswordV1('1', 'newpwd123' ),
+                    userPassword,
                     (err, userPassword) => {
                         assert.isNull(err);
                         
@@ -49,7 +53,22 @@ export class PasswordsPersistenceFixture {
                     }
                 );
             },
-        // Delete the user password
+            // Get user password
+            (callback) => {
+                this._persistence.getOneById(
+                    null,
+                    USER_PWD.id,
+                    (err, userPassword) => {
+                        assert.isNull(err);
+                        
+                        assert.isObject(userPassword);
+                        assert.equal(userPassword.id, USER_PWD.id)
+
+                        callback();
+                    }
+                );
+            },
+    // Delete the user password
             (callback) => {
                 this._persistence.deleteById(
                     null,

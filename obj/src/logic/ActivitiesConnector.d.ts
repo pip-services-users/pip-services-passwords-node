@@ -4,7 +4,7 @@ export declare class ActivitiesConnector {
     private _logger;
     private _activitiesClient;
     constructor(_logger: ILogger, _activitiesClient: IActivitiesClientV1);
-    private logActivity(correlationId, userId, activityType);
+    private logActivity;
     logSigninActivity(correlationId: string, userId: string): void;
     logPasswordRecoveredActivity(correlationId: string, userId: string): void;
     logPasswordChangedActivity(correlationId: string, userId: string): void;
