@@ -1,6 +1,6 @@
 {
     "name": "pip-services-passwords-node",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "author": "Conceptual Vision Consulting LLC",
     "description": "Password authentication microservice in Node.js",
     "contributors": [
@@ -48,8 +48,8 @@
         "pip-services3-rpc-node": "^3.0.0",
         "pip-services3-grpc-node": "^3.0.0",
         "pip-services3-mongoose-node": "^3.0.0",
-        "pip-clients-activities-node": "git+ssh://git@github.com:pip-services-users/pip-clients-activities-node.git",
-        "pip-clients-msgdistribution-node": "git+ssh://git@github.com:pip-services-users/pip-clients-msgdistribution-node.git"
+        "pip-clients-activities-node": "^1.0.0",
+        "pip-clients-msgdistribution-node": "^1.0.0"
     },
     "devDependencies": {
         "google-protobuf": "^3.7.1",

@@ -23,6 +23,7 @@ class PasswordsServiceFactory extends pip_services3_components_node_1.Factory {
         this.registerAsType(PasswordsServiceFactory.GrpcServiceDescriptor, PasswordsGrpcServiceV1_1.PasswordsGrpcServiceV1);
     }
 }
+exports.PasswordsServiceFactory = PasswordsServiceFactory;
 PasswordsServiceFactory.Descriptor = new pip_services3_commons_node_1.Descriptor("pip-services-passwords", "factory", "default", "default", "1.0");
 PasswordsServiceFactory.MemoryPersistenceDescriptor = new pip_services3_commons_node_1.Descriptor("pip-services-passwords", "persistence", "memory", "*", "1.0");
 PasswordsServiceFactory.FilePersistenceDescriptor = new pip_services3_commons_node_1.Descriptor("pip-services-passwords", "persistence", "file", "*", "1.0");
@@ -32,5 +33,4 @@ PasswordsServiceFactory.ControllerDescriptor = new pip_services3_commons_node_1.
 PasswordsServiceFactory.HttpServiceDescriptor = new pip_services3_commons_node_1.Descriptor("pip-services-passwords", "service", "http", "*", "1.0");
 PasswordsServiceFactory.CommandableGrpcServiceDescriptor = new pip_services3_commons_node_1.Descriptor("pip-services-passwords", "service", "commandable-grpc", "*", "1.0");
 PasswordsServiceFactory.GrpcServiceDescriptor = new pip_services3_commons_node_1.Descriptor("pip-services-passwords", "service", "grpc", "*", "1.0");
-exports.PasswordsServiceFactory = PasswordsServiceFactory;
 //# sourceMappingURL=PasswordsServiceFactory.js.map
