@@ -25,7 +25,7 @@ class PasswordsController {
         this._recExpireTimeout = 24 * 3600000; // 24 hours
         this._lockEnabled = false;
         this._magicCode = null;
-        this._code_length = 6; // Generated code length
+        this._code_length = 9; // Generated code length
     }
     configure(config) {
         config = config.setDefaults(PasswordsController._defaultConfig);
@@ -38,7 +38,7 @@ class PasswordsController {
         this._lockEnabled = config.getAsBooleanWithDefault('options.lock_enabled', this._lockEnabled);
         this._magicCode = config.getAsStringWithDefault('options.magic_code', this._magicCode);
         this._code_length = config.getAsIntegerWithDefault('options.code_length', this._code_length);
-        this._code_length = this._code_length <= 6 ? this._code_length : 6;
+        this._code_length = this._code_length <= 9 ? this._code_length : 9;
         this._code_length = this._code_length >= 3 ? this._code_length : 3;
     }
     setReferences(references) {
@@ -347,6 +347,6 @@ PasswordsController._defaultConfig = pip_services3_commons_node_1.ConfigParams.f
 'options.rec_expire_timeout', 24 * 3600000, // 24 hours
 'options.lock_enabled', false, // set to TRUE to enable locking logic
 'options.magic_code', null, // Universal code
-'options.code_length', 6 // Generated code length (3 - 6, default 6)
+'options.code_length', 9 // Generated code length (3 - 9, default 9)
 );
 //# sourceMappingURL=PasswordsController.js.map

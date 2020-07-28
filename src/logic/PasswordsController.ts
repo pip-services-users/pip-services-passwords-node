@@ -69,7 +69,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
     private _recExpireTimeout: number = 24 * 3600000; // 24 hours
     private _lockEnabled: boolean = false;
     private _magicCode: string = null;
-    private _code_length: number = 6; // Generated code length
+    private _code_length: number = 9; // Generated code length
 
     public configure(config: ConfigParams): void {
         config = config.setDefaults(PasswordsController._defaultConfig)
