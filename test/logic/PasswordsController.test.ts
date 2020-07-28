@@ -95,7 +95,7 @@ suite('PasswordsController', ()=> {
 
                         assert.equal(USER_PWD.id, userPassword.id);
                         assert.isNotNull(userPassword.rec_code);
-                        assert.equal(userPassword.rec_code.length, 6);
+                        assert.equal(userPassword.rec_code.length, 9);
                         assert.isNotNull(userPassword.rec_expire_time);
 
                         userPassword1 = userPassword;
