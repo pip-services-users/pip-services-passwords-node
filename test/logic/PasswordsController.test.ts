@@ -95,6 +95,7 @@ suite('PasswordsController', ()=> {
 
                         assert.equal(USER_PWD.id, userPassword.id);
                         assert.isNotNull(userPassword.rec_code);
+                        assert.equal(userPassword.rec_code.length, 6);
                         assert.isNotNull(userPassword.rec_expire_time);
 
                         userPassword1 = userPassword;
@@ -111,6 +112,84 @@ suite('PasswordsController', ()=> {
 
                             assert.isTrue(valid);
 
+                            callback();
+                        }
+                    )
+                }
+            }
+        ], done);
+    });
+
+    test('Recover Code Length', (done) => {
+        let userPassword1: UserPasswordV1;
+        controller.configure(ConfigParams.fromTuples("options.code_length","4"));
+
+        async.series([
+        // Create a new user
+            (callback) => {
+                controller.setPassword(
+                    null,
+                    USER_PWD.id, 
+                    USER_PWD.password,
+                    (err) => {
+                        assert.isNull(err);
+                        
+                        callback();
+                    }
+                );
+            },
+            // Verify
+            (callback) => {
+                persistence.getOneById(
+                    null,
+                    USER_PWD.id,
+                    (err, userPassword) => {
+                        assert.isNull(err);
+
+                        assert.equal(USER_PWD.id, userPassword.id);
+                        assert.isNull(userPassword.rec_code || null);
+
+                        callback();
+                    }
+                )
+            },
+        // Recover password
+            (callback) => {
+                controller.recoverPassword(
+                    null,
+                    USER_PWD.id,
+                    (err,) => {
+                        assert.isNull(err);
+
+                        callback();
+                    }
+                );
+            },
+            // Verify
+            (callback) => {
+                persistence.getOneById(
+                    null,
+                    USER_PWD.id,
+                    (err, userPassword) => {
+                        assert.isNull(err);
+
+                        assert.equal(USER_PWD.id, userPassword.id);
+                        assert.isNotNull(userPassword.rec_code);
+                        assert.equal(userPassword.rec_code.length, 4);
+                        assert.isNotNull(userPassword.rec_expire_time);
+
+                        userPassword1 = userPassword;
+
+                        callback();
+                    }
+                ),
+                // Validate code
+                (callback) => {
+                    controller.validateCode(
+                        null, USER_PWD.id, userPassword1.rec_code,
+                        (err, valid) => {
+                            assert.isNull(err);
+                            assert.isTrue(valid);
                             callback();
                         }
                     )

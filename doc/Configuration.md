@@ -90,6 +90,7 @@ Example:
       rec_expire_timeout: 7200000 # 2 hours
       lock_enabled: false # set to TRUE to enable locking logic
       magic_code: null # Universal code
+      code_lenth: 4 # recovery code length (min 3, max 6, default 6)
 ```
 
 ## <a name="service"></a> Services

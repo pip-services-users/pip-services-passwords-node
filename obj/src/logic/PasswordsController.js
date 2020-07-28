@@ -25,6 +25,7 @@ class PasswordsController {
         this._recExpireTimeout = 24 * 3600000; // 24 hours
         this._lockEnabled = false;
         this._magicCode = null;
+        this._code_length = 6; // Generated code length
     }
     configure(config) {
         config = config.setDefaults(PasswordsController._defaultConfig);
@@ -36,6 +37,9 @@ class PasswordsController {
         this._recExpireTimeout = config.getAsIntegerWithDefault('options.rec_expire_timeout', this._recExpireTimeout);
         this._lockEnabled = config.getAsBooleanWithDefault('options.lock_enabled', this._lockEnabled);
         this._magicCode = config.getAsStringWithDefault('options.magic_code', this._magicCode);
+        this._code_length = config.getAsIntegerWithDefault('options.code_length', this._code_length);
+        this._code_length = this._code_length <= 6 ? this._code_length : 6;
+        this._code_length = this._code_length >= 3 ? this._code_length : 3;
     }
     setReferences(references) {
         this._logger.setReferences(references);
@@ -52,7 +56,7 @@ class PasswordsController {
         return this._commandSet;
     }
     generateVerificationCode() {
-        return pip_services3_commons_node_3.IdGenerator.nextShort();
+        return pip_services3_commons_node_3.IdGenerator.nextShort().substr(0, this._code_length);
     }
     hashPassword(password) {
         if (!password)
@@ -342,6 +346,7 @@ PasswordsController._defaultConfig = pip_services3_commons_node_1.ConfigParams.f
 'options.attempt_count', 4, // 4 times
 'options.rec_expire_timeout', 24 * 3600000, // 24 hours
 'options.lock_enabled', false, // set to TRUE to enable locking logic
-'options.magic_code', null // Universal code
+'options.magic_code', null, // Universal code
+'options.code_length', 6 // Generated code length (3 - 6, default 6)
 );
 //# sourceMappingURL=PasswordsController.js.map

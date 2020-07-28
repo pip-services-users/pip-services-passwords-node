@@ -1,3 +1,9 @@
+<a name="1.0.1"></a> ### 1.0.1 (2020-07-28)
+
+#### Features
+* Add config param for change recovery code length from 3 to 6 characters
+
+
 <a name="1.0.0"></a> ### 1.0.0 (2017-04-05)
 
 #### Features
@@ -14,4 +20,5 @@ No breaking changes since this is the first version
 
 #### Bug Fixes
 No fixes in this version
+
 

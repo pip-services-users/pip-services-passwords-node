@@ -43,13 +43,14 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         'message_templates.password_changed.text', '{{name}} password was changed.',
         'message_templates.recover_password.subject', 'Reset password',
         'message_templates.recover_password.text', '{{name}} password reset code is {{code}}',
-        
+
         'options.lock_timeout', 1800000, // 30 mins
         'options.attempt_timeout', 60000, // 1 min
         'options.attempt_count', 4, // 4 times
         'options.rec_expire_timeout', 24 * 3600000, // 24 hours
         'options.lock_enabled', false, // set to TRUE to enable locking logic
-        'options.magic_code', null // Universal code
+        'options.magic_code', null, // Universal code
+        'options.code_length', 6 // Generated code length (3 - 6, default 6)
     );
 
     private _dependencyResolver: DependencyResolver = new DependencyResolver(PasswordsController._defaultConfig);
@@ -68,6 +69,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
     private _recExpireTimeout: number = 24 * 3600000; // 24 hours
     private _lockEnabled: boolean = false;
     private _magicCode: string = null;
+    private _code_length: number = 6; // Generated code length
 
     public configure(config: ConfigParams): void {
         config = config.setDefaults(PasswordsController._defaultConfig)
@@ -80,6 +82,9 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         this._recExpireTimeout = config.getAsIntegerWithDefault('options.rec_expire_timeout', this._recExpireTimeout);
         this._lockEnabled = config.getAsBooleanWithDefault('options.lock_enabled', this._lockEnabled);
         this._magicCode = config.getAsStringWithDefault('options.magic_code', this._magicCode);
+        this._code_length = config.getAsIntegerWithDefault('options.code_length', this._code_length);
+        this._code_length = this._code_length <= 6 ? this._code_length : 6;
+        this._code_length = this._code_length >= 3 ? this._code_length : 3;
     }
 
     public setReferences(references: IReferences): void {
@@ -100,7 +105,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
     }
 
     private generateVerificationCode(): string {
-        return IdGenerator.nextShort();
+        return IdGenerator.nextShort().substr(0, this._code_length);
     }
 
     private hashPassword(password: string): string {
@@ -117,8 +122,8 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         if (!password) {
             callback(
                 new BadRequestException(
-                    correlationId, 
-                    'NO_PASSWORD', 
+                    correlationId,
+                    'NO_PASSWORD',
                     'Missing user password'
                 )
             );
@@ -128,8 +133,8 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         if (password.length < 6 || password.length > 20) {
             callback(
                 new BadRequestException(
-                    correlationId, 
-                    'BAD_PASSWORD', 
+                    correlationId,
+                    'BAD_PASSWORD',
                     'User password should be 5 to 20 symbols long'
                 )
             );
@@ -155,24 +160,24 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
             }
         );
     }
-         
+
     public validatePassword(correlationId: string, password: string,
         callback: (err: any) => void): void {
-                    
+
         if (this.verifyPassword(correlationId, password, callback))
             return;
 
         callback(null);
-    } 
+    }
 
     public getPasswordInfo(correlationId: string, userId: string,
         callback: (err: any, info: UserPasswordInfoV1) => void): void {
         this._persistence.getOneById(
             correlationId,
-            userId, 
+            userId,
             (err, data) => {
                 if (data != null) {
-                    let info = <UserPasswordInfoV1> {
+                    let info = <UserPasswordInfoV1>{
                         id: data.id,
                         change_time: data.change_time,
                         locked: data.locked,
@@ -189,33 +194,33 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
     public setPassword(correlationId: string, userId: string, password: string,
         callback: (err: any) => void): void {
         password = this.hashPassword(password);
-        
+
         let userPassword = new UserPasswordV1(userId, password);
         this._persistence.create(correlationId, userPassword, (err) => {
-            callback(err); 
+            callback(err);
         });
-    } 
+    }
 
     public setTempPassword(correlationId: string, userId: string,
         callback: (err: any, password: string) => void): void {
-            
+
         // Todo: Improve password generation
         let password = 'pass' + Math.floor(1000 * Math.random() * 9000);
         let passwordHash = this.hashPassword(password);
-        
+
         let userPassword = new UserPasswordV1(userId, passwordHash);
         userPassword.change_time = new Date();
 
         this._persistence.create(correlationId, userPassword, (err) => {
-            callback(err, err == null ? password : null); 
+            callback(err, err == null ? password : null);
         });
-    } 
+    }
 
     public deletePassword(correlationId: string, userId: string,
         callback: (err: any) => void): void {
         this._persistence.deleteById(correlationId, userId, callback);
-    } 
-    
+    }
+
     public authenticate(correlationId: string, userId: string, password: string,
         callback: (err: any, authenticated: boolean) => void): void {
         let hashedPassword = this.hashPassword(password);
@@ -223,18 +228,18 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         let userPassword: UserPasswordV1;
 
         async.series([
-        // Retrieve user password
+            // Retrieve user password
             (callback) => {
                 this.readUserPassword(
                     correlationId,
-                    userId, 
+                    userId,
                     (err, data) => {
                         userPassword = data;
                         callback(err);
                     }
                 );
             },
-        // Check password and process failed attempts
+            // Check password and process failed attempts
             (callback) => {
                 let passwordMatch = userPassword.password == hashedPassword;
                 let lastFailureTimeout = userPassword.fail_time
@@ -244,7 +249,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                 if (!this._lockEnabled && passwordMatch)
                     userPassword.locked = false;
                 else {
-                    if (passwordMatch && userPassword.locked && lastFailureTimeout > this._lockTimeout) 
+                    if (passwordMatch && userPassword.locked && lastFailureTimeout > this._lockTimeout)
                         userPassword.locked = false; //unlock user
                     else if (userPassword.locked) {
                         callback(
@@ -253,7 +258,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                                 'ACCOUNT_LOCKED',
                                 'Account for user ' + userId + ' is locked'
                             )
-                            .withDetails('user_id', userId)
+                                .withDetails('user_id', userId)
                         );
                         return;
                     }
@@ -266,25 +271,25 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
 
                         if (userPassword.fail_count >= this._attemptCount) {
                             userPassword.locked = true;
-                            
+
                             callback(
                                 new BadRequestException(
                                     correlationId,
                                     'ACCOUNT_LOCKED',
                                     'Number of attempts exceeded. Account for user ' + userId + ' was locked'
                                 )
-                                .withDetails('user_id', userId)
+                                    .withDetails('user_id', userId)
                             );
 
                             this._messageConnector.sendAccountLockedEmail(correlationId, userId);
-                        } else { 
+                        } else {
                             callback(
                                 new BadRequestException(
                                     correlationId,
                                     'WRONG_PASSWORD',
                                     'Invalid password'
                                 )
-                                .withDetails('user_id', userId)
+                                    .withDetails('user_id', userId)
                             );
                         }
 
@@ -303,7 +308,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
 
                 callback();
             },
-        // Perform authentication and save user
+            // Perform authentication and save user
             (callback) => {
                 // Update user last signin date
                 userPassword.fail_count = 0;
@@ -315,7 +320,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                     callback
                 );
             },
-        // Asynchronous post-processing
+            // Asynchronous post-processing
             (callback) => {
                 this._activitiesConnector.logSigninActivity(correlationId, userId);
                 callback();
@@ -331,35 +336,35 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
 
         let userPassword;
 
-        if (!this.verifyPassword(correlationId, newPassword, callback)) 
+        if (!this.verifyPassword(correlationId, newPassword, callback))
             return;
 
         oldPassword = this.hashPassword(oldPassword);
         newPassword = this.hashPassword(newPassword);
 
         async.series([
-        // Retrieve user
+            // Retrieve user
             (callback) => {
                 this.readUserPassword(
                     correlationId,
-                    userId,  
+                    userId,
                     (err, data) => {
                         userPassword = data;
                         callback(err);
                     }
                 );
             },
-        // Verify and reset password
+            // Verify and reset password
             (callback) => {
                 // Password must be different then the previous one
                 if (userPassword.password != oldPassword) {
                     callback(
                         new BadRequestException(
                             correlationId,
-                            'WRONG_PASSWORD', 
+                            'WRONG_PASSWORD',
                             'Invalid password'
                         )
-                        .withDetails('user_id', userId)
+                            .withDetails('user_id', userId)
                     );
                     return;
                 }
@@ -371,7 +376,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                             'PASSWORD_NOT_CHANGED',
                             'Old and new passwords are identical'
                         )
-                        .withDetails('user_id', userId)
+                            .withDetails('user_id', userId)
                     );
                     return;
                 }
@@ -386,7 +391,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
 
                 callback();
             },
-        // Save the new password
+            // Save the new password
             (callback) => {
                 this._persistence.update(
                     correlationId,
@@ -394,7 +399,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                     callback
                 );
             },
-        // Asynchronous post-processing
+            // Asynchronous post-processing
             (callback) => {
                 this._activitiesConnector.logPasswordChangedActivity(correlationId, userId);
                 this._messageConnector.sendPasswordChangedEmail(correlationId, userId);
@@ -411,10 +416,10 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
 
         this.readUserPassword(
             correlationId,
-            userId,  
+            userId,
             (err, data) => {
                 if (err == null && data != null) {
-                    let valid = code == this._magicCode 
+                    let valid = code == this._magicCode
                         || (data.rec_code == code && data.rec_expire_time > new Date());
                     callback(null, valid);
                 } else {
@@ -429,24 +434,24 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
 
         let userPassword: UserPasswordV1;
 
-        if (!this.verifyPassword(correlationId, password, callback)) 
+        if (!this.verifyPassword(correlationId, password, callback))
             return;
 
         password = this.hashPassword(password);
 
         async.series([
-        // Retrieve user
+            // Retrieve user
             (callback) => {
                 this.readUserPassword(
                     correlationId,
-                    userId,  
+                    userId,
                     (err, data) => {
                         userPassword = data;
                         callback(err);
                     }
                 );
             },
-        // Validate reset code and reset the password
+            // Validate reset code and reset the password
             (callback) => {
                 // Todo: Remove magic code
                 if (userPassword.rec_code != code && code != this._magicCode) {
@@ -456,7 +461,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                             'WRONG_CODE',
                             'Invalid password recovery code ' + code
                         )
-                        .withDetails('user_id', userId)
+                            .withDetails('user_id', userId)
                     );
                     return;
                 }
@@ -469,7 +474,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                             'CODE_EXPIRED',
                             'Password recovery code ' + code + ' expired'
                         )
-                        .withDetails('user_id', userId)
+                            .withDetails('user_id', userId)
                     );
                     return;
                 }
@@ -484,7 +489,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
 
                 callback();
             },
-        // Save the new password
+            // Save the new password
             (callback) => {
                 this._persistence.update(
                     correlationId,
@@ -492,7 +497,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                     callback
                 );
             },
-        // Asynchronous post-processing
+            // Asynchronous post-processing
             (callback) => {
                 this._activitiesConnector.logPasswordChangedActivity(correlationId, userId);
                 this._messageConnector.sendPasswordChangedEmail(correlationId, userId);
@@ -509,18 +514,18 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         let userPassword: UserPasswordV1;
 
         async.series([
-        // Retrieve user
+            // Retrieve user
             (callback) => {
                 this.readUserPassword(
                     correlationId,
-                    userId,  
+                    userId,
                     (err, data) => {
                         userPassword = data;
                         callback(err);
                     }
                 );
             },
-        // Update and save recovery code
+            // Update and save recovery code
             (callback) => {
                 let currentTicks = new Date().getTime();
                 let expireTicks = currentTicks + this._recExpireTimeout;
@@ -535,7 +540,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
                     callback
                 );
             },
-        // Asynchronous post-processing
+            // Asynchronous post-processing
             (callback) => {
                 this._activitiesConnector.logPasswordRecoveredActivity(correlationId, userId);
                 this._messageConnector.sendRecoverPasswordEmail(correlationId, userId, userPassword.rec_code);
@@ -545,5 +550,5 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
             if (callback) callback(err);
         });
     }
-    
+
 }

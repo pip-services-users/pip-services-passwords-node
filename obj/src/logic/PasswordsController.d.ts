@@ -23,6 +23,7 @@ export declare class PasswordsController implements IConfigurable, IReferenceabl
     private _recExpireTimeout;
     private _lockEnabled;
     private _magicCode;
+    private _code_length;
     configure(config: ConfigParams): void;
     setReferences(references: IReferences): void;
     getCommandSet(): CommandSet;
