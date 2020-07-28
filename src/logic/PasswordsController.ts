@@ -50,7 +50,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         'options.rec_expire_timeout', 24 * 3600000, // 24 hours
         'options.lock_enabled', false, // set to TRUE to enable locking logic
         'options.magic_code', null, // Universal code
-        'options.code_length', 6 // Generated code length (3 - 6, default 6)
+        'options.code_length', 9 // Generated code length (3 - 9, default 9)
     );
 
     private _dependencyResolver: DependencyResolver = new DependencyResolver(PasswordsController._defaultConfig);
@@ -83,7 +83,7 @@ export class PasswordsController implements IConfigurable, IReferenceable, IComm
         this._lockEnabled = config.getAsBooleanWithDefault('options.lock_enabled', this._lockEnabled);
         this._magicCode = config.getAsStringWithDefault('options.magic_code', this._magicCode);
         this._code_length = config.getAsIntegerWithDefault('options.code_length', this._code_length);
-        this._code_length = this._code_length <= 6 ? this._code_length : 6;
+        this._code_length = this._code_length <= 9 ? this._code_length : 9;
         this._code_length = this._code_length >= 3 ? this._code_length : 3;
     }
 
